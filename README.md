@@ -1,4 +1,4 @@
-# sclblPy
+# sclblpy
 Python package for Scailable uploads
 
 Functionally this package allows one to upload fitted sci-kit learn models to Scailabe after authentication using JWT:
