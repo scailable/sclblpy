@@ -1,7 +1,0 @@
-README.md
-setup.py
-sclblpy/__init__.py
-sclblpy.egg-info/PKG-INFO
-sclblpy.egg-info/SOURCES.txt
-sclblpy.egg-info/dependency_links.txt
-sclblpy.egg-info/top_level.txt
