@@ -1,0 +1,34 @@
+Metadata-Version: 2.1
+Name: sclblpy
+Version: 0.0.1
+Summary: Python package for uploading models to Scailable toolchain.
+Home-page: https://github.com/scailable/sclblpy/
+Author: Maurits Kaptein
+Author-email: maurits.kaptein@scailable.com
+License: UNKNOWN
+Description: # sclblpy
+        Python package for Scailable uploads
+        
+        Functionally this package allows one to upload fitted sci-kit learn models to Scailabe after authentication using JWT:
+        ````
+        # Import the package:
+        import sclblpy as sp
+        
+        # Authenticate (unsure if this can work):
+        sp.auth("username", "pass")
+        
+        # Upload a model
+        sp.upload(mod)
+        ````
+        
+        ## References:
+        
+        * We use [http://google.github.io/styleguide/pyguide.html](http://google.github.io/styleguide/pyguide.html).
+        * Package structure: [https://packaging.python.org/tutorials/packaging-projects/](https://packaging.python.org/tutorials/packaging-projects/)
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
