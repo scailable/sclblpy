@@ -22,3 +22,6 @@ sp.upload(mod)
 
 ## Notes:
 Install package locally ``pip install -e .``
+
+## Dependencies
+- ``requests``
