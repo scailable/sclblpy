@@ -29,6 +29,7 @@ USER_CREDENTIALS_FOLDER: str = ""  # Location where user credentials are stored.
 #     3. Retrieve / check JWT TOKEN
 #     4. POST .zip file using JWT token.
 
+
 def remove_credentials(_verbose=True):
     """ Remove your stored credentials """
     path: str = USER_CREDENTIALS_FOLDER + ".creds.json"
