@@ -136,3 +136,6 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+# User credentials
+.creds.json

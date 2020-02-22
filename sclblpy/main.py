@@ -1,3 +1,4 @@
+import os
 import warnings
 
 import requests as req
@@ -5,26 +6,40 @@ import time
 import json
 from getpass import getpass, GetPassWarning
 
-USER_MANAGER_URL = "http://localhost:8008"  # Location of the user manager
-TOOLCHAIN_URL = "http://check-with-robin.scailable.net"  # Location of the toolchain
+USER_MANAGER_URL: str = "http://localhost:8008"  # Location of the user manager
+TOOLCHAIN_URL: str = "http://check-with-robin.scailable.net"  # Location of the toolchain
 JWT_TOKEN: str = ""  # JWT token
 JWT_TIMESTAMP: float = 0.0  # Timestamp in seconds
+USER_CREDENTIALS_FOLDER: str = ""  # Location where user credentials are stored.
 
+# Todo(Mck): Work on upload; first figure our how sklearn stors its models
 
-# def upload():
+# def upload(mod):
 #     """ Upload a fitted sklearn model to Scailable
 #
 #     ...
 #
-#     :return:
+#
 #     """
-#     print("upload")
-#     print(JWT_STRING)
+#     1. Inspect the module object
+#       - See if its type matches our options
+#       - Clean it (strip data)
 #
-#
+#     2. Use joblib to store the saved file / zip it?
+#     3. Retrieve / check JWT TOKEN
+#     4. POST .zip file using JWT token.
 
-def remove_credentials() -> bool:
+def remove_credentials(_verbose=True):
     """ Remove your stored credentials """
+    path: str = USER_CREDENTIALS_FOLDER + ".creds.json"
+
+    if os.path.exists(path):
+        os.remove(path)
+        if _verbose:
+            print("Removed user credentials")
+    else:
+        if _verbose:
+            print("No user credentials found")
 
 
 def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
@@ -57,19 +72,20 @@ def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
     time_renew: float = now - seconds_renew
 
     if not JWT_TOKEN or JWT_TIMESTAMP < time_renew:
-        print("Renew sign in:: NOT YET IMPLEMENTED!!")
-        return False
+        user_details: dict = __get_user_details()
+        try:
+            __sign_in(user_details['username'], user_details['password'])
+        except LoginError as e:
+            raise JWTError("Unable to obtain JWT TOKEN. " + str(e))
 
     if JWT_TIMESTAMP < time_refresh:
         try:
             if __refresh_jwt():
-                print("Refreshed JWT")
                 return True
         except JWTError as e:
             raise JWTError("Unable to refresh JWT TOKEN. " + str(e))
 
     # else all ok:
-    print("JWT OK")
     return True
 
 
@@ -78,7 +94,7 @@ def __get_user_details() -> dict:
 
     details: dict = {}
     try:
-        with open("creds.json", "r") as f:
+        with open(USER_CREDENTIALS_FOLDER + ".creds.json", "r") as f:
             details = json.load(f)
             return details
     except FileNotFoundError:
@@ -100,10 +116,9 @@ def __get_user_details() -> dict:
         else:
             break
     if answ == 'y':
-        with open("creds.json", "w+") as f:
+        with open(USER_CREDENTIALS_FOLDER + ".creds.json", "w+") as f:
             json.dump(details, f)
 
-    print(details)
     return details
 
 
@@ -169,7 +184,6 @@ def __sign_in(username: str, password: str) -> bool:
         raise LoginError("No username or password provided.")
 
     url: str = USER_MANAGER_URL + "/user/signin/"
-    print(url)
     data: dict = {
         'email': username,
         'pwd': password
@@ -182,6 +196,7 @@ def __sign_in(username: str, password: str) -> bool:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
         result: dict = resp.json()
         if result.get("error") is not None:
+            remove_credentials(False)  # Removing user credentials if they are not right
             raise LoginError(result.get("error"))
         if result.get("token") is not None:
             JWT_TOKEN = result.get("token")
@@ -197,6 +212,7 @@ def __sign_in(username: str, password: str) -> bool:
 class LoginError(Exception):
     """ Login error """
     pass
+
 
 class JWTError(Exception):
     """ JWT Error """
