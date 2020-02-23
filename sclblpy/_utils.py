@@ -1,9 +1,35 @@
 # Utility functions (internal)
-from sclblpy import *
+from sclblpy import ModelSupportError
+from sclblpy._globals import SUPPORTED_MODELS, CURRENT_FOLDER
 import inspect
 import json
 import sklearn
 from sklearn.utils.validation import check_is_fitted
+
+
+
+
+def __check_model(obj) -> bool:
+    """Checks whether a model can be uploaded to Scailable
+
+    Args:
+        obj: a fitted model
+
+    Returns:
+        True if passes all checks
+
+    Raises:
+        ModelSupportError if not correct
+    """
+    try:
+        __model_supported(obj)
+    except ModelSupportError as e:
+        raise ModelSupportError("Unable to check of model is supported. " + str(e))
+
+    if not __model_is_fitted(obj):
+        raise ModelSupportError("Model does not seem fitted yet. Run .fit() before submitting.")
+
+    return True
 
 
 def __model_supported(obj) -> bool:
@@ -42,12 +68,10 @@ def __get_model_name(obj):
 
 
 def __load_supported_models():
-    print("loading supported models..")
     global SUPPORTED_MODELS
     try:
         with open(CURRENT_FOLDER + "/supported.json", "r") as f:
             SUPPORTED_MODELS = json.load(f)
-            print("opening file...")
     except FileNotFoundError:
         raise ModelSupportError("Unable to find list of supported models.")
 

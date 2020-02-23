@@ -34,10 +34,10 @@ def test_supported_model():
     results = model.fit()
 
     if __model_supported(model):
-        print("model 2 supported UNSURE")
+        print("model 2 supported CORRECT")
 
     if __model_supported(results):
-        print("model 3 supported UNSURE")
+        print("model 3 supported NOT CORRECT")
 
     try:
         __model_supported({})
@@ -46,8 +46,7 @@ def test_supported_model():
 
 
 def test_model_is_fitted():
-
-
+    """ Test model is fitted() function """
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)
 
@@ -62,6 +61,7 @@ def test_model_is_fitted():
 
 # Run tests
 if __name__ == '__main__':
-    # test_supported_model()
+    print("Running tests of _utils.py")
+    test_supported_model()
     test_model_is_fitted()
     print("All tests passed.")
