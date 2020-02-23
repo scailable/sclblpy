@@ -1,6 +1,5 @@
 import os
 import warnings
-
 import requests as req
 import time
 import json
@@ -8,13 +7,16 @@ from getpass import getpass, GetPassWarning
 
 USER_MANAGER_URL: str = "http://localhost:8008"  # Location of the user manager
 TOOLCHAIN_URL: str = "http://check-with-robin.scailable.net"  # Location of the toolchain
+
 JWT_TOKEN: str = ""  # JWT token
+JWT_USER_ID: str = ""  # Scailable user id
 JWT_TIMESTAMP: float = 0.0  # Timestamp in seconds
+
 USER_CREDENTIALS_FOLDER: str = ""  # Location where user credentials are stored.
 
 # Todo(Mck): Work on upload; first figure our how sklearn stors its models
 
-# def upload(mod):
+# def upload(mod, _verbose=True):
 #     """ Upload a fitted sklearn model to Scailable
 #
 #     ...
@@ -28,23 +30,31 @@ USER_CREDENTIALS_FOLDER: str = ""  # Location where user credentials are stored.
 #     2. Use joblib to store the saved file / zip it?
 #     3. Retrieve / check JWT TOKEN
 #     4. POST .zip file using JWT token.
+#     5. Make sure an informative message is posted back (demonstrating where and how to use the REST endpoint)
 
 
 def remove_credentials(_verbose=True):
-    """ Remove your stored credentials """
+    """Remove your stored credentials.
+
+    Remove the .creds.json file that stores the username and password
+    of the current user.
+
+    Args:
+        _verbose: Boolean indicator whether or not feedback should be printed. Default True.
+    """
     path: str = USER_CREDENTIALS_FOLDER + ".creds.json"
 
     if os.path.exists(path):
         os.remove(path)
         if _verbose:
-            print("Removed user credentials")
+            print("Removed user credentials.")
     else:
         if _verbose:
-            print("No user credentials found")
+            print("No user credentials found.")
 
 
 def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
-    """Checks whether a valid JWT string is present
+    """Checks whether a valid JWT string is present.
 
     Checks whether a valid JWT string is present. If so,
     checks whether the JWT string needs refreshing (more than 2 mins old)
@@ -162,11 +172,11 @@ def __refresh_jwt() -> bool:
 
 
 def __sign_in(username: str, password: str) -> bool:
-    """ Perform signing of a user
+    """ Perform sign in of a user.
 
-    The function signin performs a signin of a user based
+    The function sign in performs a sign in of a user based
     on the username (str) and password (str). It returns
-    a boolean value indicating whether the signin was succesful.
+    a boolean value indicating whether the sign in was successful.
 
     Args:
         username: A string (email) to login the user
@@ -180,6 +190,7 @@ def __sign_in(username: str, password: str) -> bool:
     """
     global JWT_TOKEN
     global JWT_TIMESTAMP
+    global JWT_USER_ID
 
     if len(username) < 1 or len(password) < 1:
         raise LoginError("No username or password provided.")
@@ -201,6 +212,7 @@ def __sign_in(username: str, password: str) -> bool:
             raise LoginError(result.get("error"))
         if result.get("token") is not None:
             JWT_TOKEN = result.get("token")
+            JWT_USER_ID = result.get("uuid")
             JWT_TIMESTAMP = time.time()
             return True
 

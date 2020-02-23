@@ -79,8 +79,11 @@ def test_sklearn():
     print(clf)
     print(type(clf))
 
+    print(type(clf).__name__)
+
     s = pickle.dumps(clf)
-    print(s)
+    print(str(s))
+
 
 # Run tests
 if __name__ == '__main__':
