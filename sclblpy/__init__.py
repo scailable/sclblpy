@@ -1,11 +1,11 @@
 """
-sclblpy python docstring
+The sclblpy package allows users to upload, monitor, and administer models
+and REST endpoints directly from python.
 """
-from .main import remove_credentials
-from .main import __sign_in
-from .main import __refresh_jwt
-from .main import __check_jwt
-from .main import __get_user_details
-from .main import LoginError
-from .main import JWTError
+# Import: note, order is important
+from ._globals import *
+from .errors import *
+from ._utils import *
+from ._jwt import *
+from .main import *
 

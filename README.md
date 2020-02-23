@@ -1,5 +1,20 @@
 # sclblpy
 > Last edited 23-02-2020; McK.
+> Note, currently working on checking whether the model is supprted
+
+## Todo
+
+1. Finalize model checking
+2. Check if model has been fitted: https://stackoverflow.com/questions/39884009/whats-the-best-way-to-test-whether-an-sklearn-model-has-been-fitted
+3. Check to remove data from model
+4. Check how to best package model
+5. Do the actual upload
+6. implement ``sp.endpoints()``
+7. implement ``sp.remove_endpoint()``
+8. Write more tests / clean up
+9. Integrate toolchain.
+
+## Info
 
 Python package for Scailable uploads
 
@@ -7,6 +22,9 @@ Functionally this package allows one to upload fitted models to Scailable after 
 ````
 # Import the package:
 import sclblpy as sp
+
+# Fit a model
+...
 
 # Upload a model
 sp.upload(mod)
@@ -23,13 +41,14 @@ Next to the main ``upload()`` function, the package also exposes the following f
 sp.endpoints()
 
 # Remove an endpoint
-sp.delete("cfid-cfid-cfid")
+sp.delete_endpoit("cfid-cfid-cfid")
 ````
 
 Finally, the package exposes
 
 ````
 # Remove stored user credentials
+sp.remove_credentials()
 
 ````
 
