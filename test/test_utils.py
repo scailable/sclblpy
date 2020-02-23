@@ -1,5 +1,5 @@
 from sclblpy import *
-from sclblpy._utils import __model_supported
+from sclblpy._utils import __model_supported, __model_is_fitted
 
 from sklearn import svm
 from sklearn import datasets
@@ -45,7 +45,23 @@ def test_supported_model():
         print(str(e))
 
 
+def test_model_is_fitted():
+
+
+    clf = svm.SVC()
+    X, y = datasets.load_iris(return_X_y=True)
+
+    print(X.shape)
+
+    print(__model_is_fitted(clf))
+    clf.fit(X, y)
+    print(__model_is_fitted(clf))
+
+    print(clf.shape_fit_)
+
+
 # Run tests
 if __name__ == '__main__':
-    test_supported_model()
+    # test_supported_model()
+    test_model_is_fitted()
     print("All tests passed.")

@@ -2,6 +2,8 @@
 from sclblpy import *
 import inspect
 import json
+import sklearn
+from sklearn.utils.validation import check_is_fitted
 
 
 def __model_supported(obj) -> bool:
@@ -48,3 +50,14 @@ def __load_supported_models():
             print("opening file...")
     except FileNotFoundError:
         raise ModelSupportError("Unable to find list of supported models.")
+
+
+def __model_is_fitted(estimator):
+    if hasattr(estimator, '_is_fitted'):
+        return estimator._is_fitted()
+
+    try:
+        check_is_fitted(estimator)
+        return True
+    except sklearn.exceptions.NotFittedError:
+        return False
