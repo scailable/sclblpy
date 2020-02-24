@@ -1,12 +1,10 @@
 # Utility functions (internal)
-from sclblpy import ModelSupportError
+from sclblpy.errors import ModelSupportError
 from sclblpy._globals import SUPPORTED_MODELS, CURRENT_FOLDER
 import inspect
 import json
 import sklearn
 from sklearn.utils.validation import check_is_fitted
-
-
 
 
 def __check_model(obj) -> bool:

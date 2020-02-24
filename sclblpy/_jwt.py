@@ -1,11 +1,13 @@
 # File contains all (private) method for jwt interaction
-from sclblpy import *
-from sclblpy.main import remove_credentials
+import os
 import warnings
 import requests as req
 import time
 import json
 from getpass import getpass, GetPassWarning
+
+from sclblpy._globals import USER_MANAGER_URL, USER_CREDENTIALS_FOLDER, JWT_USER_ID, JWT_TOKEN, JWT_TIMESTAMP
+from sclblpy.errors import LoginError, JWTError
 
 
 def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
@@ -30,7 +32,6 @@ def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
     Raises:
         JWTError: if unable to obtain a valid JWT string
     """
-
     now: float = time.time()
     time_refresh: float = now - seconds_refresh
     time_renew: float = now - seconds_renew
@@ -90,7 +91,7 @@ def __sign_in(username: str, password: str) -> bool:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
         result: dict = resp.json()
         if result.get("error") is not None:
-            remove_credentials(False)  # Removing user credentials if they are not right
+            __remove_credentials(False)  # Removing user credentials if they are not right
             raise LoginError(result.get("error"))
         if result.get("token") is not None:
             JWT_TOKEN = result.get("token")
@@ -173,6 +174,19 @@ def __refresh_jwt() -> bool:
 
     except req.exceptions.RequestException as a:
         raise LoginError("Cannot connect to Scailable servers.")
+
+
+def __remove_credentials(_verbose=True):
+    # global USER_CREDENTIALS_FOLDER
+    path: str = USER_CREDENTIALS_FOLDER + ".creds.json"
+
+    if os.path.exists(path):
+        os.remove(path)
+        if _verbose:
+            print("Removed user credentials.")
+    else:
+        if _verbose:
+            print("No user credentials found.")
 
 
 if __name__ == '__main__':

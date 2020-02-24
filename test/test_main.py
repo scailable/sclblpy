@@ -1,5 +1,7 @@
 import pickle
 import time
+
+from sclblpy._bundle import __gzip_load
 from sclblpy._jwt import __get_user_details
 from sclblpy.main import remove_credentials, upload
 
@@ -16,23 +18,13 @@ def test_upload():
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)
     clf.fit(X, y)
-
     row = X[0,:]
-    #print(row)
-    #print(type(row))
-    #print(row.shape)
 
-    x = np.linspace(0, 10, 100)
-    X = np.column_stack((x, x ** 2))
-    X = sm.add_constant(X)
-    row2 = X[0,:]
-    #print(row2)
-    #print(type(row2))
-    #print(row2.shape)
-
-    print("====")
     upload(clf)
-    upload(clf, row)
+    upload(clf, row, _keep=True)
+
+    obj = __gzip_load()
+    print(obj)
 
 
 

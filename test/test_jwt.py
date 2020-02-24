@@ -1,5 +1,7 @@
-from sclblpy import *
+import time
+
 from sclblpy._jwt import __check_jwt, __sign_in, __get_user_details
+from sclblpy.errors import LoginError, JWTError
 from sclblpy.main import remove_credentials
 
 
