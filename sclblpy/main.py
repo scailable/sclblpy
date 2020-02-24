@@ -4,10 +4,10 @@ import sys
 import warnings
 import numpy as np
 
+import sclblpy._globals as glob
 from sclblpy._bundle import __gzip_save, __gzip_delete
 from sclblpy._jwt import __check_jwt, __remove_credentials
 from sclblpy._utils import __check_model, __get_model_name
-from sclblpy._globals import JWT_USER_ID
 from sclblpy.errors import ModelSupportError
 
 
@@ -18,7 +18,7 @@ def upload(mod, row=np.empty(0), docs={}, _verbose=True, _keep=False):
 
 
     """
-    global JWT_USER_ID
+    print(glob.JWT_USER_ID)
 
     try:
         model_ok = __check_model(mod)
@@ -67,9 +67,9 @@ def upload(mod, row=np.empty(0), docs={}, _verbose=True, _keep=False):
         print(str(e))
 
     if auth:
-        print(JWT_USER_ID)
+        print(glob.JWT_USER_ID)
         print("AT THIS POINT WE SHOULD POST THE GZIPPED FILE TO THE TOOLCHAIN\n"
-              "(user id is: " + JWT_USER_ID + ")\n"
+              "(user id is: " + glob.JWT_USER_ID + ")\n"
               "... and perhaps wait for the response by the server...")
 
     if not _keep:

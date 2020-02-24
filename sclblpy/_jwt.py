@@ -6,7 +6,8 @@ import time
 import json
 from getpass import getpass, GetPassWarning
 
-from sclblpy._globals import USER_MANAGER_URL, USER_CREDENTIALS_FOLDER, JWT_USER_ID, JWT_TOKEN, JWT_TIMESTAMP
+#from sclblpy._globals import USER_MANAGER_URL, USER_CREDENTIALS_FOLDER, JWT_USER_ID, JWT_TOKEN, JWT_TIMESTAMP
+import sclblpy._globals as glob
 from sclblpy.errors import LoginError, JWTError
 
 
@@ -36,14 +37,14 @@ def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
     time_refresh: float = now - seconds_refresh
     time_renew: float = now - seconds_renew
 
-    if not JWT_TOKEN or JWT_TIMESTAMP < time_renew:
+    if not glob.JWT_TOKEN or glob.JWT_TIMESTAMP < time_renew:
         user_details: dict = __get_user_details()
         try:
             __sign_in(user_details['username'], user_details['password'])
         except LoginError as e:
             raise JWTError("Unable to obtain JWT TOKEN. " + str(e))
 
-    if JWT_TIMESTAMP < time_refresh:
+    if glob.JWT_TIMESTAMP < time_refresh:
         try:
             if __refresh_jwt():
                 return True
@@ -71,14 +72,14 @@ def __sign_in(username: str, password: str) -> bool:
     Raises:
         LoginError: if unable to login
     """
-    global JWT_TOKEN
-    global JWT_TIMESTAMP
-    global JWT_USER_ID
+    #global JWT_TOKEN
+    #global JWT_TIMESTAMP
+    #global JWT_USER_ID
 
     if len(username) < 1 or len(password) < 1:
         raise LoginError("No username or password provided.")
 
-    url: str = USER_MANAGER_URL + "/user/signin/"
+    url: str = glob.USER_MANAGER_URL + "/user/signin/"
     data: dict = {
         'email': username,
         'pwd': password
@@ -94,9 +95,9 @@ def __sign_in(username: str, password: str) -> bool:
             __remove_credentials(False)  # Removing user credentials if they are not right
             raise LoginError(result.get("error"))
         if result.get("token") is not None:
-            JWT_TOKEN = result.get("token")
-            JWT_USER_ID = result.get("uuid")
-            JWT_TIMESTAMP = time.time()
+            glob.JWT_TOKEN = result.get("token")
+            glob.JWT_USER_ID = result.get("uuid")
+            glob.JWT_TIMESTAMP = time.time()
             return True
 
     except req.exceptions.RequestException as a:
@@ -110,7 +111,7 @@ def __get_user_details() -> dict:
 
     details: dict = {}
     try:
-        with open(USER_CREDENTIALS_FOLDER + ".creds.json", "r") as f:
+        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "r") as f:
             details = json.load(f)
             return details
     except FileNotFoundError:
@@ -132,7 +133,7 @@ def __get_user_details() -> dict:
         else:
             break
     if answ == 'y':
-        with open(USER_CREDENTIALS_FOLDER + ".creds.json", "w+") as f:
+        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "w+") as f:
             json.dump(details, f)
 
     return details
@@ -151,15 +152,15 @@ def __refresh_jwt() -> bool:
     Raises:
         JWTError if something is wrong.
     """
-    global JWT_TOKEN
-    global JWT_TIMESTAMP
+    #global JWT_TOKEN
+    #global JWT_TIMESTAMP
 
-    if not JWT_TOKEN:
+    if not glob.JWT_TOKEN:
         raise JWTError("No JWT token found")
 
-    url: str = USER_MANAGER_URL + "/user/refresh/"
+    url: str = glob.USER_MANAGER_URL + "/user/refresh/"
     headers = {
-        'Authorization': JWT_TOKEN
+        'Authorization': glob.JWT_TOKEN
     }
 
     try:
@@ -168,8 +169,8 @@ def __refresh_jwt() -> bool:
         if result.get("error") is not None:
             raise JWTError(result.get("error"))
         if result.get("token") is not None:
-            JWT_TOKEN = result.get("token")
-            JWT_TIMESTAMP = time.time()
+            glob.JWT_TOKEN = result.get("token")
+            glob.JWT_TIMESTAMP = time.time()
             return True
 
     except req.exceptions.RequestException as a:
@@ -178,7 +179,7 @@ def __refresh_jwt() -> bool:
 
 def __remove_credentials(_verbose=True):
     # global USER_CREDENTIALS_FOLDER
-    path: str = USER_CREDENTIALS_FOLDER + ".creds.json"
+    path: str = glob.USER_CREDENTIALS_FOLDER + ".creds.json"
 
     if os.path.exists(path):
         os.remove(path)

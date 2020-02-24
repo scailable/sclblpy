@@ -1,6 +1,6 @@
 # Utility functions (internal)
 from sclblpy.errors import ModelSupportError
-from sclblpy._globals import SUPPORTED_MODELS, CURRENT_FOLDER
+import sclblpy._globals as glob
 import inspect
 import json
 import sklearn
@@ -34,7 +34,7 @@ def __model_supported(obj) -> bool:
     """Checks whether the supplied model is supported.
 
     """
-    if not SUPPORTED_MODELS:
+    if not glob.SUPPORTED_MODELS:
         __load_supported_models()
 
     try:
@@ -43,8 +43,8 @@ def __model_supported(obj) -> bool:
     except:
         raise ModelSupportError("Unable to retrieve model details")
 
-    if (model_base in SUPPORTED_MODELS and
-            model_name in SUPPORTED_MODELS[model_base]):
+    if (model_base in glob.SUPPORTED_MODELS and
+            model_name in glob.SUPPORTED_MODELS[model_base]):
         return True
     else:
         return False
@@ -66,10 +66,10 @@ def __get_model_name(obj):
 
 
 def __load_supported_models():
-    global SUPPORTED_MODELS
+    #global glob.SUPPORTED_MODELS
     try:
-        with open(CURRENT_FOLDER + "/supported.json", "r") as f:
-            SUPPORTED_MODELS = json.load(f)
+        with open(glob.CURRENT_FOLDER + "/supported.json", "r") as f:
+            glob.SUPPORTED_MODELS = json.load(f)
     except FileNotFoundError:
         raise ModelSupportError("Unable to find list of supported models.")
 

@@ -7,6 +7,8 @@ from sklearn import datasets
 import numpy as np
 import statsmodels.api as sm
 
+from sclblpy.errors import ModelSupportError
+
 
 def test_supported_model():
     """Check whether or not a model is supported."""
