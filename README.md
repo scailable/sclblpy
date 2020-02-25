@@ -1,18 +1,12 @@
 # sclblpy
-> Last edited 23-02-2020; McK.
-> Note, currently working on checking whether the model is supprted
+> Last edited 25-02-2020; McK.
+> Effectively all functionality implemented **BUT** for the actual upload.
 
 ## Todo
 
-1. Finalize model checking
-2. Check if model has been fitted: https://stackoverflow.com/questions/39884009/whats-the-best-way-to-test-whether-an-sklearn-model-has-been-fitted
-3. Check to remove data from model
-4. Check how to best package model
-5. Do the actual upload
-6. implement ``sp.endpoints()``
-7. implement ``sp.remove_endpoint()``
-8. Write more tests / clean up
-9. Integrate toolchain.
+1. Write tests for all models (e.g., test_all_models.py)
+2. Discuss architecture w. Robin
+3. Integrate toolchain.
 
 ## Info
 
@@ -26,8 +20,8 @@ import sclblpy as sp
 # Fit a model
 ...
 
-# Upload a model
-sp.upload(mod)
+# Upload a model including documentation and an example feature vector
+sp.upload(mod, docs, feature_vector)
 ````
 
 Note that upon first upload the user will be prompted to provide the Scailable username and password 
@@ -41,7 +35,7 @@ Next to the main ``upload()`` function, the package also exposes the following f
 sp.endpoints()
 
 # Remove an endpoint
-sp.delete_endpoit("cfid-cfid-cfid")
+sp.delete_endpoint("cfid-cfid-cfid")
 ````
 
 Finally, the package exposes
@@ -52,10 +46,21 @@ sp.remove_credentials()
 
 ````
 
+## Testing
+Initial tests are available for all functionality. Run
+````
+python test_bundle.py
+python test_jwt.py
+python test_utils.py
+python test_main.py
+````
+inside ``/test/``. 
+
+> Runnint the tests requires and active account.
 
 
 ## Notes:
-Install package locally ``pip install -e .``
+Install package locally using ``pip install -e .``
 
 ## Dependencies
 - ``requests``
