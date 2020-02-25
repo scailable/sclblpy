@@ -8,7 +8,7 @@ import requests
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
-from sclblpy._utils import _check_model, _get_model_name, _get_system_info
+from sclblpy._utils import _check_model, _get_model_name, _get_system_info, _predict
 from sclblpy.errors import ModelSupportError, UserManagerError, JWTError
 
 
@@ -59,8 +59,8 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         example = {}
         example['input'] = feature_vector.tolist()
         try:
-            output = mod.predict(feature_vector.reshape(1, -1))
-            example["output"] = json.dumps(output.tolist())
+            output = _predict(mod, feature_vector)
+            example["output"] = json.dumps(output)
         except Exception as e:
             print("WARNING: we were unable to create an example inference.")
             if _verbose:
@@ -119,7 +119,6 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
 
     if not _keep:
         _gzip_delete()
-    print("(...done...)")
 
 
 def endpoints(_verbose=True):

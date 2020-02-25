@@ -5,7 +5,7 @@ import socket
 import sys
 import uuid
 
-from sclblpy.errors import ModelSupportError
+from sclblpy.errors import ModelSupportError, GeneratePredictionError
 import sclblpy._globals as glob
 import inspect
 import json
@@ -166,6 +166,47 @@ def _model_is_fitted(estimator):
         return True
     except sklearn.exceptions.NotFittedError:
         return False
+
+
+def _predict(mod, feature_vector, _verbose=False):
+    """Generates predictions.
+
+    Function to generate predictions and have the ability to
+    deal with different model classes.
+
+    Args:
+        mod: A saved model instance
+        feature_vector: A single row used for prediction (subset of dataset)
+        _verbose: Bool indicating whether feedback should be printed. Default False.
+
+    Returns:
+        A prediction (as list)
+
+    Raises:
+        GeneratePredictionError if unable to generate prediction.
+    """
+    package = _get_model_package(mod)
+    if package == "sklearn":
+        try:
+            result = mod.predict(feature_vector.reshape(1, -1))
+            return result.tolist()
+        except Exception as e:
+            if _verbose:
+                print("Unable to generate prediction sklearn: " + str(e))
+            raise GeneratePredictionError("Unable to generate prediction")
+    elif package == "statsmodels":
+        try:
+            result = mod.fit().predict(feature_vector.reshape(1, -1))
+            return result.tolist()
+        except Exception as e:
+            if _verbose:
+                print("Unable to generate prediction sklearn: " + str(e))
+            raise GeneratePredictionError("Unable to generate prediction")
+    else:
+        if _verbose:
+            print("We currently cannot provide predictions for the current model type.")
+
+    raise GeneratePredictionError("Model type not found")
 
 
 def _get_system_info(_verbose=False):

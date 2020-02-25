@@ -2,7 +2,7 @@
 # tests, a more elaborate tests of all models is found in
 # test_all_models.py.
 
-from sclblpy._utils import _model_supported, _model_is_fitted, _get_system_info
+from sclblpy._utils import _model_supported, _model_is_fitted, _get_system_info, _predict
 from sclblpy.errors import ModelSupportError
 
 from sklearn import svm
@@ -59,6 +59,15 @@ def test_model_is_fitted():
     assert _model_is_fitted(model) == True, "Should be fitted."
 
 
+def test_predict():
+    clf = svm.SVC()
+    X, y = datasets.load_iris(return_X_y=True)
+    clf.fit(X, y)
+    assert _predict(clf, X[0, :]) == [0], "Should be 0"
+    model = sm.OLS(y, X)
+    assert _predict(model, X[0, :]) == [-0.07861540851180868], "Should be different prediction"
+
+
 def test_get_system_info():
     """ Test get system info """
     print(_get_system_info())
@@ -72,6 +81,7 @@ if __name__ == '__main__':
     test_supported_model()
     test_model_is_fitted()
     test_get_system_info()
+    test_predict()
 
     print("===============================")
     print("All tests passed.")
