@@ -55,19 +55,16 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         return
     bundle['fitted_model'] = mod
 
-    if feature_vector.any():
+    if feature_vector.any():  # this does not fail gracefully...
         example = {}
         example['input'] = feature_vector.tolist()
-        output = {}
         try:
             output = mod.predict(feature_vector.reshape(1, -1))
+            example["output"] = json.dumps(output.tolist())
         except Exception as e:
+            print("WARNING: we were unable to create an example inference.")
             if _verbose:
                 print("Unable to predict: " + str(e))
-        if output:
-            example["output"] = json.dumps(output.tolist())
-        else:
-            print("WARNING: we were unable to create an example inference.")
         bundle['example'] = example
     else:
         print("WARNING: You did not provide an example instance. (see docs). \n"
@@ -99,9 +96,10 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
             print(str(e))
 
     if auth:
-        print("AT THIS POINT WE SHOULD POST THE GZIPPED FILE TO THE TOOLCHAIN\n"
-              "(user id is: " + glob.JWT_USER_ID + ")\n"
-                                                   "... and perhaps wait for the response by the server...")
+        # Still to implement:
+        if _verbose:
+            print("AT THIS POINT WE SHOULD POST THE GZIPPED FILE TO THE TOOLCHAIN\n"
+                  "(user id is: " + glob.JWT_USER_ID + ")")
 
         # POST FILE EXAMPLE:
         # url = glob.TOOLCHAIN_URL

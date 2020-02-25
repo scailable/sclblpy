@@ -53,6 +53,11 @@ def test_model_is_fitted():
     clf.fit(X, y)
     assert _model_is_fitted(clf) == True, "Should be fitted."
 
+    model = sm.OLS(y, X)
+    assert _model_is_fitted(model) == False, "Should not be fitted."
+    model.fit()
+    assert _model_is_fitted(model) == True, "Should be fitted."
+
 
 def test_get_system_info():
     """ Test get system info """

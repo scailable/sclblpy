@@ -7,7 +7,7 @@ from sclblpy.errors import ModelBundleError
 import sclblpy._globals as glob
 
 
-def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=True):
+def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
     """Saves a compressed object to disk.
 
     Function is used to pickle and gzip an sclblpy model object as created
@@ -15,8 +15,8 @@ def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=True):
 
     Args:
         object: A dictonary containing all the information to be send.
-        filename: a string stating where to store the .zip file. Default 'temp_sclbl_mod.gzip'
-        _verbose: Bool indicating whether feedback should be printed. Default True.
+        filename: a string stating where to store the .zip file. Default glob.BUNDLE_NAME
+        _verbose: Bool indicating whether feedback should be printed. Default False.
 
     Returns:
 

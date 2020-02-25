@@ -8,8 +8,6 @@ from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint
 from sklearn import svm
 from sklearn import datasets
 
-import numpy as np
-import statsmodels.api as sm
 
 def test_upload():
     """ Test the upload function"""
@@ -64,6 +62,7 @@ def test_delete_endpoint():
     try:
         cfid = ep[0]['cfid']
     except Exception as e:
+        # Effectively there was no endpoint...
         print(e)
 
     if cfid:

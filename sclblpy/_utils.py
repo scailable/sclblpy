@@ -107,7 +107,7 @@ def _get_model_name(obj):
     """
 
     try:
-        name =  type(obj).__name__
+        name = type(obj).__name__
     except Exception as e:
         raise ModelSupportError("Unable to get model name")
 
@@ -153,6 +153,13 @@ def _model_is_fitted(estimator):
     """
     if hasattr(estimator, '_is_fitted'):
         return estimator._is_fitted()
+
+    # statsmodels:
+    if hasattr(estimator, '_df_model'):
+        if estimator._df_model is None:
+            return False
+        else:
+            return True
 
     try:
         check_is_fitted(estimator)
