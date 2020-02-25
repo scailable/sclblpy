@@ -5,8 +5,8 @@ import warnings
 import numpy as np
 
 import sclblpy._globals as glob
-from sclblpy._bundle import __gzip_save, __gzip_delete
-from sclblpy._jwt import __check_jwt, __remove_credentials
+from sclblpy._bundle import _gzip_save, _gzip_delete
+from sclblpy._jwt import _check_jwt, _remove_credentials
 from sclblpy._utils import __check_model, __get_model_name
 from sclblpy.errors import ModelSupportError
 
@@ -53,14 +53,14 @@ def upload(mod, row=np.empty(0), docs={}, _verbose=True, _keep=False):
         package["docs"] = __get_model_name(mod)
 
     try:
-        __gzip_save(package)
+        _gzip_save(package)
     except:
         e = sys.exc_info()[0]
         print("Unable to gzip.")
         print(str(e))
 
     try:
-        auth = __check_jwt()
+        auth = _check_jwt()
     except:
         e = sys.exc_info()[0]
         print("Unable to authorize.")
@@ -95,7 +95,7 @@ def remove_credentials(_verbose=True):
     Args:
         _verbose: Boolean indicator whether or not feedback should be printed. Default True.
     """
-    __remove_credentials()
+    _remove_credentials()
 
 
 if __name__ == '__main__':

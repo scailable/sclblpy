@@ -1,8 +1,8 @@
 import pickle
 import time
 
-from sclblpy._bundle import __gzip_load
-from sclblpy._jwt import __get_user_details
+from sclblpy._bundle import _gzip_load
+from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload
 
 from sklearn import svm
@@ -23,7 +23,7 @@ def test_upload():
     upload(clf)
     upload(clf, row, _keep=True)
 
-    obj = __gzip_load()
+    obj = _gzip_load()
     print(obj)
 
 
@@ -31,7 +31,7 @@ def test_upload():
 
 def test_remove_credentials():
     """ Test of get user details"""
-    __get_user_details()
+    _get_user_details()
     remove_credentials()
 
 

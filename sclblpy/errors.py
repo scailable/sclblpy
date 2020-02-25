@@ -1,4 +1,4 @@
-# Custom errors for the sclblpy package
+# Custom errors for the sclblpy package.
 
 
 class LoginError(Exception):
@@ -13,4 +13,9 @@ class JWTError(Exception):
 
 class ModelSupportError(Exception):
     """ Model support error """
+    pass
+
+
+class ModelBundleError(Exception):
+    """ Model pickle / gzip error """
     pass

@@ -1,8 +1,7 @@
 import time
 
-from sclblpy._jwt import __check_jwt, __sign_in, __get_user_details
+from sclblpy._jwt import _check_jwt, _sign_in, _remove_credentials, _get_user_details
 from sclblpy.errors import LoginError, JWTError
-from sclblpy.main import remove_credentials
 
 
 def test_JWT():
@@ -10,22 +9,22 @@ def test_JWT():
 
     # Test with try:
     try:
-        __check_jwt(seconds_refresh=2, seconds_renew=3)
+        _check_jwt(seconds_refresh=2, seconds_renew=3)
         print("Success!")
     except JWTError as e:
         print("JWT error: " + str(e))
 
     # Test over time:
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
     time.sleep(2)
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
     time.sleep(4)
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
-    remove_credentials()
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    _remove_credentials()
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
     time.sleep(4)
-    __check_jwt(seconds_refresh=2, seconds_renew=3)
+    _check_jwt(seconds_refresh=2, seconds_renew=3)
 
 
 def test_signin():
@@ -35,7 +34,7 @@ def test_signin():
     username: str = ""
     password: str = ""
     try:
-        __sign_in(username, password)
+        _sign_in(username, password)
     except LoginError as e:
         print("Unable to login: " + str(e))
         print("CORRECT!")
@@ -44,7 +43,7 @@ def test_signin():
     username = "maurits@mauritskaptein.com"
     password = "dsfasfdaf90234i143"
     try:
-        __sign_in(username, password)
+        _sign_in(username, password)
     except LoginError as e:
         print("Unable to login: " + str(e))
         print("CORRECT!")
@@ -53,7 +52,7 @@ def test_signin():
     username = "maurits@mauritskaptein.com"
     password = "test"
     try:
-        __sign_in(username, password)
+        _sign_in(username, password)
         print("login successful")
         print("CORRECT!")
     except LoginError as e:
@@ -62,12 +61,21 @@ def test_signin():
 
 def test_get_user_details():
     """ Test of get user details"""
-    print(__get_user_details())
+    print(_get_user_details())
+    print(_remove_credentials())
+    print(_get_user_details())
 
 
 # Run tests
 if __name__ == '__main__':
+    print("Running tests of _jwt.py")
+    print("These take a few seconds to simulate refreshing etc.")
+    print("===============================")
+
     test_signin()
     test_get_user_details()
-    test_JWT()  # check
+    test_JWT()
+    print("If no  errors / exceptions, all tests passed.")
+
+    print("===============================")
     print("All tests passed.")

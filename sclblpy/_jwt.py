@@ -1,4 +1,4 @@
-# File contains all (private) method for jwt interaction
+# File contains all (private) method for jwt interaction.
 import os
 import warnings
 import requests as req
@@ -6,12 +6,11 @@ import time
 import json
 from getpass import getpass, GetPassWarning
 
-#from sclblpy._globals import USER_MANAGER_URL, USER_CREDENTIALS_FOLDER, JWT_USER_ID, JWT_TOKEN, JWT_TIMESTAMP
 import sclblpy._globals as glob
 from sclblpy.errors import LoginError, JWTError
 
 
-def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
+def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
     """Checks whether a valid JWT string is present.
 
     Checks whether a valid JWT string is present. If so,
@@ -26,37 +25,40 @@ def __check_jwt(seconds_refresh=120, seconds_renew=300) -> bool:
     and subsequently sign in.
 
     Args:
+        seconds_refresh: int, seconds before a refresh is attempted. Default 120.
+        seconds_renew: int, seconds before a renew is attempted. Default 280.
+        _verbose: Bool indicating whether feedback should be printed. Default True.
 
     Returns:
-        True if valid JWT string is present
+        True if valid JWT string is present.
 
     Raises:
-        JWTError: if unable to obtain a valid JWT string
+        JWTError: if unable to obtain a valid JWT string.
     """
     now: float = time.time()
     time_refresh: float = now - seconds_refresh
     time_renew: float = now - seconds_renew
 
     if not glob.JWT_TOKEN or glob.JWT_TIMESTAMP < time_renew:
-        user_details: dict = __get_user_details()
+        user_details: dict = _get_user_details()
         try:
-            __sign_in(user_details['username'], user_details['password'])
+            _sign_in(user_details['username'], user_details['password'])
         except LoginError as e:
             raise JWTError("Unable to obtain JWT TOKEN. " + str(e))
 
     if glob.JWT_TIMESTAMP < time_refresh:
         try:
-            if __refresh_jwt():
+            if _refresh_jwt():
                 return True
         except JWTError as e:
             raise JWTError("Unable to refresh JWT TOKEN. " + str(e))
 
-    # else all ok:
+    # JWT token is present and no need to refresh yet:
     return True
 
 
-def __sign_in(username: str, password: str) -> bool:
-    """ Perform sign in of a user.
+def _sign_in(username: str, password: str, _remove_file=True) -> bool:
+    """Performs the sign in of a user.
 
     The function sign in performs a sign in of a user based
     on the username (str) and password (str). It returns
@@ -65,17 +67,14 @@ def __sign_in(username: str, password: str) -> bool:
     Args:
         username: A string (email) to login the user
         password: A string (password for login
+        _remove_file: A bool indicating if the credentials should be removed on failed login. Default True.
 
     Returns:
-        True if sign in is successful
+        True if sign in is successful.
 
     Raises:
-        LoginError: if unable to login
+        LoginError: if unable to login.
     """
-    #global JWT_TOKEN
-    #global JWT_TIMESTAMP
-    #global JWT_USER_ID
-
     if len(username) < 1 or len(password) < 1:
         raise LoginError("No username or password provided.")
 
@@ -92,7 +91,8 @@ def __sign_in(username: str, password: str) -> bool:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
         result: dict = resp.json()
         if result.get("error") is not None:
-            __remove_credentials(False)  # Removing user credentials if they are not right
+            if _remove_file:
+                _remove_credentials(False)  # Removing user credentials if they are not right
             raise LoginError(result.get("error"))
         if result.get("token") is not None:
             glob.JWT_TOKEN = result.get("token")
@@ -106,8 +106,27 @@ def __sign_in(username: str, password: str) -> bool:
     return False
 
 
-def __get_user_details() -> dict:
-    """ Get the username and password from a user """
+def _get_user_details() -> dict:
+    """Gets the username and password from a user.
+
+    Function tries to
+    a. Retrieve username and password from .creds.json file.
+    b. Retrieve username and password by prompting the user.
+
+    If user responds 'y' to prompt to save the function will create
+    .creds.json and store the user credentials.
+
+    Args:
+
+    Returns:
+        A dict containing the fields
+            'username' String
+            'password' String
+
+    Raises:
+
+
+    """
 
     details: dict = {}
     try:
@@ -139,8 +158,8 @@ def __get_user_details() -> dict:
     return details
 
 
-def __refresh_jwt() -> bool:
-    """ Refresh JWT string
+def _refresh_jwt() -> bool:
+    """Refreshes the JWT string.
 
     Refresh the JWT string based on an existing token.
 
@@ -150,11 +169,9 @@ def __refresh_jwt() -> bool:
         True if refresh successful
 
     Raises:
-        JWTError if something is wrong.
+        JWTError if something is wrong with the JWT string.
+        LoginError if unable to connect to servers.
     """
-    #global JWT_TOKEN
-    #global JWT_TIMESTAMP
-
     if not glob.JWT_TOKEN:
         raise JWTError("No JWT token found")
 
@@ -177,10 +194,17 @@ def __refresh_jwt() -> bool:
         raise LoginError("Cannot connect to Scailable servers.")
 
 
-def __remove_credentials(_verbose=True):
-    # global USER_CREDENTIALS_FOLDER
-    path: str = glob.USER_CREDENTIALS_FOLDER + ".creds.json"
+def _remove_credentials(_verbose=True):
+    """Removes stored user credentials.
 
+    Assuming credentials are stored in .creds.json the function
+    deletes the .creds.json file.
+
+    Args:
+        _verbose: Bool indicating whether feedback should be printed. Default True.
+
+    """
+    path: str = glob.USER_CREDENTIALS_FOLDER + ".creds.json"
     if os.path.exists(path):
         os.remove(path)
         if _verbose:
@@ -191,4 +215,4 @@ def __remove_credentials(_verbose=True):
 
 
 if __name__ == '__main__':
-    print("No command line options yet.")
+    print("No command line options yet for _jwt.py.")
