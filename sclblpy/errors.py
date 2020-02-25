@@ -19,3 +19,11 @@ class ModelSupportError(Exception):
 class ModelBundleError(Exception):
     """ Model pickle / gzip error """
     pass
+
+
+class UserManagerError(Exception):
+    """ User manager error """
+    pass
+
+if __name__ == '__main__':
+    print("No command line options available for errors.py")

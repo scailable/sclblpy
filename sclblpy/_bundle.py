@@ -4,9 +4,10 @@ import pickle
 import os
 
 from sclblpy.errors import ModelBundleError
+import sclblpy._globals as glob
 
 
-def _gzip_save(object, filename: str= "temp_sclbl_mod.gzip", _verbose=True):
+def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=True):
     """Saves a compressed object to disk.
 
     Function is used to pickle and gzip an sclblpy model object as created
@@ -37,7 +38,7 @@ def _gzip_save(object, filename: str= "temp_sclbl_mod.gzip", _verbose=True):
     return
 
 
-def _gzip_load(filename: str= "temp_sclbl_mod.gzip", _verbose=True):
+def _gzip_load(filename: str=glob.BUNDLE_NAME, _verbose=True):
     """Loads a compressed object from disk.
 
     Currently not used in the sclblpy package but syntax should be used on the toolchain side.
@@ -71,12 +72,12 @@ def _gzip_load(filename: str= "temp_sclbl_mod.gzip", _verbose=True):
     return obj
 
 
-def _gzip_delete(filename="temp_sclbl_mod.gzip", _verbose=True):
+def _gzip_delete(filename:str =glob.BUNDLE_NAME, _verbose=False):
     """Deletes a file from user machine.
 
     Args:
         filename: Str name of the file to delete, default: temp_sclbl_mod.gzip.
-        _verbose: Bool indicating whether feedback should be printed. Default True.
+        _verbose: Bool indicating whether feedback should be printed. Default False.
 
     Returns:
 
