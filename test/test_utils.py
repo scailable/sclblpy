@@ -1,13 +1,14 @@
 # Tests for the utils. Note, these are just simple unit
 # tests, a more elaborate tests of all models is found in
 # test_all_models.py.
+from sklearn.utils.validation import check_is_fitted
 
 from sclblpy._utils import _model_supported, _model_is_fitted, _get_system_info, _predict
 from sclblpy.errors import ModelSupportError
 
 from sklearn import svm
 from sklearn import datasets
-
+from xgboost import XGBRegressor
 import numpy as np
 import statsmodels.api as sm
 
@@ -44,6 +45,12 @@ def test_supported_model():
     except ModelSupportError as e:
         print(str(e))
 
+    # XG boost model:
+    xgb = XGBRegressor()
+    assert _model_supported(xgb) == True, "This one should be ok"
+
+
+
 
 def test_model_is_fitted():
     """ Test model is fitted() function """
@@ -58,14 +65,25 @@ def test_model_is_fitted():
     model.fit()
     assert _model_is_fitted(model) == True, "Should be fitted."
 
+    # XG boost model:
+    xgb = XGBRegressor()
+    assert _model_is_fitted(xgb) == False, "Model should not be fitted"
+    xgb.fit(X, y)
+    assert _model_is_fitted(xgb) == True, "This one should be fitted"
+
+
+
 
 def test_predict():
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)
     clf.fit(X, y)
-    assert _predict(clf, X[0, :]) == [0], "Should be 0"
+    assert _predict(clf, X[0, :]) == [0], "Wrong sklearn prediction"
     model = sm.OLS(y, X)
-    assert _predict(model, X[0, :]) == [-0.07861540851180868], "Should be different prediction"
+    assert _predict(model, X[0, :]) == [-0.07861540851180868], "Wrong statsmodels prediction"
+    xgb = XGBRegressor()
+    xgb.fit(X, y)
+    assert _predict(xgb, X[0, :]) == [1.1295080184936523e-05], "Wrong XGB prediction"
 
 
 def test_get_system_info():

@@ -35,15 +35,18 @@
     "SGDClassifier",
     "SGDRegressor",
     "SVC",
-    "SVR",
-    "XGBClassifier",
-    "XGBRegressor",
-    "XGBRFClassifier",
-    "XGBRFRegressor"
+    "SVR"
   ],
   "statsmodels" : [
     "OLS",
     "GLW",
     "WLS"
+  ],
+  "xgboost" : [
+    "XGBModel",
+    "XGBClassifier",
+    "XGBRegressor",
+    "XGBRFClassifier",
+    "XGBRFRegressor"
   ]
 }

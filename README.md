@@ -53,6 +53,7 @@ python test_bundle.py
 python test_jwt.py
 python test_utils.py
 python test_main.py
+python test_all_models.py
 ````
 inside ``/test/``. 
 
@@ -259,11 +260,17 @@ Install package locally using ``pip install -e .``
 | VarianceThreshold              | feature_selection     |                                  | Yes                            |
 | VotingClassifier               | ensemble              |                                  | Yes                            |
 | VotingRegressor                | ensemble              |                                  | Yes                            |
-| XGBClassifier                  | tree                  | Yes                              |                                |
-| XGBRegressor                   | tree                  | Yes                              |                                |
-| XGBRFClassifier                | tree                  | Yes                              |                                |
-| XGBRFRegressor                 | tree                  | Yes                              |                                |
 
+
+### XGBoost [[link](https://xgboost.readthedocs.io/en/latest/)]
+
+| Name                           | Package               | Direct transpile (at 21-02-2020) | ONNX transpile (sometime 2020) |
+| :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
+| XGBModel                       | XGboost               | Yes                              |                                |
+| XGBClassifier                  | XGboost               | Yes                              |                                |
+| XGBRegressor                   | XGboost               | Yes                              |                                |
+| XGBRFClassifier                | XGboost               | Yes                              |                                |
+| XGBRFRegressor                 | XGboost               | Yes                              |                                |
 
 ## References:
 

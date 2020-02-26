@@ -9,8 +9,8 @@ from sclblpy.errors import ModelSupportError, GeneratePredictionError
 import sclblpy._globals as glob
 import inspect
 import json
-import sklearn
 from sklearn.utils.validation import check_is_fitted
+from sklearn.exceptions import NotFittedError
 
 
 def _check_model(obj) -> bool:
@@ -161,10 +161,18 @@ def _model_is_fitted(estimator):
         else:
             return True
 
+    # XGboost exception
+    if _get_model_package(estimator) == "xgboost":
+        try:
+            estimator.feature_importances_
+            return True
+        except Exception as e:  # general exception to not include xgboost
+            return False
+
     try:
         check_is_fitted(estimator)
         return True
-    except sklearn.exceptions.NotFittedError:
+    except NotFittedError:
         return False
 
 
@@ -193,14 +201,22 @@ def _predict(mod, feature_vector, _verbose=False):
         except Exception as e:
             if _verbose:
                 print("Unable to generate prediction sklearn: " + str(e))
-            raise GeneratePredictionError("Unable to generate prediction")
+            raise GeneratePredictionError("Unable to generate sklearn prediction")
     elif package == "statsmodels":
         try:
             result = mod.fit().predict(feature_vector.reshape(1, -1))
             return result.tolist()
         except Exception as e:
             if _verbose:
-                print("Unable to generate prediction sklearn: " + str(e))
+                print("Unable to generate statstmodels prediction: " + str(e))
+            raise GeneratePredictionError("Unable to generate prediction")
+    elif package == "xgboost":
+        try:
+            result = mod.predict(feature_vector.reshape(1, -1))
+            return result.tolist()
+        except Exception as e:
+            if _verbose:
+                print("Unable to generate prediction xgboost: " + str(e))
             raise GeneratePredictionError("Unable to generate prediction")
     else:
         if _verbose:
