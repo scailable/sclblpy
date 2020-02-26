@@ -1,12 +1,12 @@
 # sclblpy
-> Last edited 25-02-2020; McK.
+> Last edited 26-02-2020; McK.
 > Effectively all functionality implemented **BUT** for the actual upload.
 
 ## Todo
 
-1. Write tests for all models (e.g., test_all_models.py)
-2. Discuss architecture w. Robin
-3. Integrate toolchain.
+
+1. Discuss architecture w. Robin
+2. Integrate toolchain.
 
 ## Info
 
