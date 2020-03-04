@@ -96,22 +96,22 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
             print(str(e))
 
     if auth:
-        # Still to implement:
-        if _verbose:
-            print("AT THIS POINT WE SHOULD POST THE GZIPPED FILE TO THE TOOLCHAIN\n"
-                  "(user id is: " + glob.JWT_USER_ID + ")")
 
-        # POST FILE EXAMPLE:
-        # url = glob.TOOLCHAIN_URL
-        # data = {}
-        # files = [
-        #     ('bundle', open(glob.BUNDLE_NAME, 'rb'))
-        # ]
-        # headers = {
-        #     'Content-Type': 'application/x-www-form-urlencoded',
-        #     'Authorization': glob.JWT_TOKEN
-        # }
-        # response = requests.request("POST", url, headers=headers, data=data, files=files)
+        url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID
+
+        # Todo: Make this dynamic
+        payload = {'data': '{"package":"sclblpy","toolchain":"sklearn"}'}
+        files = [('bundle', open('/Users/mauritskate/Desktop/bundle.gzip', 'rb'))]
+        headers = {
+             'Content-Type': 'application/x-www-form-urlencoded',
+             'Authorization': glob.JWT_USER_ID
+        }
+
+        # Todo: add try except here:
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+        # Todo: add the right feedback:
+        print(response)
 
     if _verbose:
         print("The following content is send to the toolchain server:")

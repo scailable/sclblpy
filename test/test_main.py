@@ -20,6 +20,8 @@ def test_upload():
     print("# 1: Simple upload, no docs etc.")
     upload(clf)
 
+    return
+
 
     print("# 2: Docs, no example")
     docs = {}
@@ -75,9 +77,9 @@ if __name__ == '__main__':
     print("===============================")
 
     test_upload()
-    test_remove_credentials()
-    test_endpoints()
-    test_delete_endpoint()
+    #test_remove_credentials()
+    #test_endpoints()
+    #test_delete_endpoint()
 
     print("===============================")
     print("All tests passed.")

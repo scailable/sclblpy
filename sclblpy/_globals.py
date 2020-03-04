@@ -2,7 +2,7 @@
 import os
 
 USER_MANAGER_URL: str = "http://localhost:8008"  # Location of the user manager.
-TOOLCHAIN_URL: str = "http://check-with-robin.scailable.net"  # Location of the toolchain server.
+TOOLCHAIN_URL: str = "http://localhost:8001"  # Location of the toolchain server.
 
 JWT_TOKEN: str = ""  # JWT token.
 JWT_USER_ID: str = ""  # Scailable user id.
