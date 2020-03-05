@@ -99,9 +99,9 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
 
         url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID
 
-        # Todo: Make this dynamic
+        # Todo: Make this dynamic and ensure the actual data is uploaded / add if statement.
         payload = {'data': '{"package":"sclblpy","toolchain":"sklearn"}'}
-        files = [('bundle', open('/Users/mauritskate/Desktop/bundle.gzip', 'rb'))]
+        files = [('bundle', open(glob.BUNDLE_NAME, 'rb'))]
         headers = {
              'Content-Type': 'application/x-www-form-urlencoded',
              'Authorization': glob.JWT_USER_ID
@@ -114,7 +114,7 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         print(response)
 
     if _verbose:
-        print("The following content is send to the toolchain server:")
+        print("The following content has been send to the toolchain server:")
         print(bundle)
 
     if not _keep:
