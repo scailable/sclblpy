@@ -14,7 +14,7 @@ def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
     by the upload() function. This package is send to the toolchain.
 
     Args:
-        object: A dictonary containing all the information to be send.
+        object: A dictionary containing all the information to be send.
         filename: a string stating where to store the .zip file. Default glob.BUNDLE_NAME
         _verbose: Bool indicating whether feedback should be printed. Default False.
 

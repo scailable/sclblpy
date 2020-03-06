@@ -18,9 +18,7 @@ def test_upload():
     clf.fit(X, y)
 
     print("# 1: Simple upload, no docs etc.")
-    upload(clf)
-
-    return
+    upload(clf, _verbose=True)
 
 
     print("# 2: Docs, no example")
@@ -77,9 +75,9 @@ if __name__ == '__main__':
     print("===============================")
 
     test_upload()
-    #test_remove_credentials()
-    #test_endpoints()
-    #test_delete_endpoint()
+    test_remove_credentials()
+    test_endpoints()
+    test_delete_endpoint()
 
     print("===============================")
     print("All tests passed.")

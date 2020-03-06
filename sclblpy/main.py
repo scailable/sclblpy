@@ -8,7 +8,7 @@ import requests
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
-from sclblpy._utils import _check_model, _get_model_name, _get_system_info, _predict
+from sclblpy._utils import _check_model, _get_model_name, _get_system_info, _predict, _get_model_package
 from sclblpy.errors import ModelSupportError, UserManagerError, JWTError
 
 
@@ -30,8 +30,6 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
 
     Finally the whole package is uploaded to the toolchain.
 
-    Todo(Mck): Finalize the final upload.
-
     Args:
         mod: The model to be uploaded.
         docs: A dict{} containing the fields 'name' and 'documentation'
@@ -40,6 +38,7 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         _keep: Bool indicating whether the .gzipped file should be retained. Default False.
 
     Returns:
+        False if upload failed, true otherwise
 
     Raises:
     """
@@ -52,10 +51,10 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
               "Please see README.md for a list of supported models.")
         if _verbose:
             print(str(e))
-        return
+        return False
     bundle['fitted_model'] = mod
 
-    if feature_vector.any():  # this does not fail gracefully...
+    if feature_vector.any():
         example = {}
         example['input'] = feature_vector.tolist()
         try:
@@ -68,7 +67,7 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         bundle['example'] = example
     else:
         print("WARNING: You did not provide an example instance. (see docs). \n"
-              "Providing en example allows us automatically generate and test your feature vector.")
+              "Providing an example allows us automatically generate and test your feature vector.")
 
     bundle['docs'] = {}
     if docs:
@@ -83,7 +82,7 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
     try:
         _gzip_save(bundle)
     except Exception as e:
-        print("FATAL: Unable to gzip your model bundle. Model not uploaded.")
+        print("FATAL: Unable to gzip your model bundle. Your model has not been uploaded.")
         if _verbose:
             print(str(e))
         return False
@@ -91,34 +90,72 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
     try:
         auth = _check_jwt()
     except Exception as e:
-        print("FATAL: Unable to obtain JWT authorization for your account. Model not uploaded.")
+        print("FATAL: Unable to obtain JWT authorization for your account. Your model has not been uploaded.")
         if _verbose:
             print(str(e))
+        return False
 
     if auth:
 
         url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID
 
-        # Todo: Make this dynamic and ensure the actual data is uploaded / add if statement.
-        payload = {'data': '{"package":"sclblpy","toolchain":"sklearn"}'}
-        files = [('bundle', open(glob.BUNDLE_NAME, 'rb'))]
-        headers = {
-             'Content-Type': 'application/x-www-form-urlencoded',
-             'Authorization': glob.JWT_USER_ID
+        # Map python package to the right toolchain:
+        pkg_name = _get_model_package(mod)
+        toolchain_name = ""
+        if pkg_name == "sklearn":
+            toolchain_name = "sklearn"
+        elif pkg_name == "statsmodels":
+            toolchain_name = "sklearn"
+        elif pkg_name == "xgboost":
+            toolchain_name = "sklearn"
+
+        # Setup the actual request
+        data: dict = {
+            'package': glob.PKG_NAME,
+            'toolchain': toolchain_name
+        }
+        payload: dict = {
+            'data': json.dumps(data)
         }
 
-        # Todo: add try except here:
-        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+        files = [('bundle', open(glob.BUNDLE_NAME, 'rb'))]
+        headers = {
+             'Authorization': glob.JWT_TOKEN
+        }
 
-        # Todo: add the right feedback:
-        print(response)
+        # Do the request
+        try:
+            response = requests.post(url, headers=headers, data=payload, files=files)
+        except Exception as e:
+            print("FATAL: Unable to carry out the upload request. Your model has not been uploaded.")
+            if _verbose:
+                print(str(e))
+            return False
 
-    if _verbose:
-        print("The following content has been send to the toolchain server:")
-        print(bundle)
+        # Error handling
+        try:
+            response_data = json.loads(response.text)
+        except Exception as e:
+            print("FATAL: No valid JSON response received. Your model has not been uploaded.")
+            if _verbose:
+                print(str(e))
+            return False
+
+        if response_data['error']:
+            print("FATAL: Error returned from server. Your model has not been uploaded.")
+            if _verbose:
+                print(str(response_data['error']))
+            return False
+
+        if _verbose:
+            print("The following content has been send to the toolchain server:")
+            print(bundle)
+            print(response.text.encode('utf8'))
 
     if not _keep:
         _gzip_delete()
+
+    return True
 
 
 def endpoints(_verbose=True):

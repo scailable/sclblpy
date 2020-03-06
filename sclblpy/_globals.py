@@ -1,6 +1,8 @@
 # Global variables for the sclblpy package.
 import os
 
+PKG_NAME: str = "sclblpy_v_0.01"
+
 USER_MANAGER_URL: str = "http://localhost:8008"  # Location of the user manager.
 TOOLCHAIN_URL: str = "http://localhost:8001"  # Location of the toolchain server.
 
