@@ -27,7 +27,7 @@ from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
 # Ugly script globals..
-PRINT_ALL = True  # Verbose output?
+PRINT_ALL = False  # Verbose output?
 TEAR_DOWN = True  # Remove all endpoints?
 iris_data = datasets.load_iris(return_X_y=True)
 
