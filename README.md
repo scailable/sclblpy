@@ -1,12 +1,9 @@
 # sclblpy
-> Last edited 26-02-2020; McK.
-> Effectively all functionality implemented **BUT** for the actual upload.
+> Last edited 06-03-2020; McK.
+> All functionality implemented and passing all tests. However, more functional tests neccessary.
 
 ## Todo
-
-
-1. Discuss architecture w. Robin
-2. Integrate toolchain.
+Test, test, and retest....
 
 ## Info
 
@@ -57,7 +54,7 @@ python test_all_models.py
 ````
 inside ``/test/``. 
 
-> Runnint the tests requires and active account.
+> Running the tests requires and active account.
 
 
 ## Notes:
