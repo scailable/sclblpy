@@ -74,6 +74,7 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         bundle['docs'] = docs
     else:
         bundle['docs']['name'] = _get_model_name(mod)
+        bundle['docs']['documentation'] = "None."
         print("WARNING: You did not provide any documentation. We will simply use \n"
               "the name of your model as its title.")
 
@@ -110,9 +111,12 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
             toolchain_name = "sklearn"
 
         # Setup the actual request
+        # Todo(Mck): Currently name and docs are both in the bundle AND in the data. Check.
         data: dict = {
             'package': glob.PKG_NAME,
-            'toolchain': toolchain_name
+            'toolchain': toolchain_name,
+            'name': bundle['docs'].get('name', "No name found."),
+            'docs': bundle['docs'].get('documentation', "No docs provided.")
         }
         payload: dict = {
             'data': json.dumps(data)
@@ -150,7 +154,6 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
         if _verbose:
             print("The following content has been send to the toolchain server:")
             print(bundle)
-            print(response.text.encode('utf8'))
 
     if not _keep:
         _gzip_delete()
