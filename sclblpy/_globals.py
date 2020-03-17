@@ -4,7 +4,7 @@ import os
 PKG_NAME: str = "sclblpy_v_0.01"
 
 USER_MANAGER_URL: str = "http://localhost:8008"  # Location of the user manager.
-TOOLCHAIN_URL: str = "http://localhost:8001"  # Location of the toolchain server.
+TOOLCHAIN_URL: str = "http://localhost:8010"  # Location of the toolchain server.
 
 JWT_TOKEN: str = ""  # JWT token.
 JWT_USER_ID: str = ""  # Scailable user id.

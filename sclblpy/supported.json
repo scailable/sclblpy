@@ -21,6 +21,7 @@
     "LinearRegression",
     "LinearSVC",
     "LinearSVR",
+    "LogisticRegression",
     "NuSVC",
     "NuSVR",
     "OrthogonalMatchingPursuit",
