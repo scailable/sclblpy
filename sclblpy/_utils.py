@@ -155,11 +155,9 @@ def _model_is_fitted(estimator):
         return estimator._is_fitted()
 
     # statsmodels:
-    if hasattr(estimator, '_df_model'):
-        if estimator._df_model is None:
-            return False
-        else:
-            return True
+    if hasattr(estimator, 'fittedvalues'):
+        return True
+
 
     # XGboost exception
     if _get_model_package(estimator) == "xgboost":

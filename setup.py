@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sclblpy",
-    version="0.0.1",
+    version="0.0.2",
     author="Maurits Kaptein",
-    author_email="maurits.kaptein@scailable.com",
+    author_email="maurits.kaptein@scailable.net",
     description="Python package for uploading models to Scailable toolchain.",
     long_description=long_description,
     long_description_content_type="text/markdown",
