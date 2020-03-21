@@ -202,7 +202,7 @@ def _predict(mod, feature_vector, _verbose=False):
             raise GeneratePredictionError("Unable to generate sklearn prediction")
     elif package == "statsmodels":
         try:
-            result = mod.fit().predict(feature_vector.reshape(1, -1))
+            result = mod.predict(feature_vector.reshape(1, -1))
             return result.tolist()
         except Exception as e:
             if _verbose:
