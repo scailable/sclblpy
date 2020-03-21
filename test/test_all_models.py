@@ -449,16 +449,6 @@ def test_xg_XGBClassifier():
     print("Tested xgboost, XGBClassifier...")
 
 
-def test_xg_XGBModel():
-    mod = XGBModel()
-    X, y = iris_data
-    mod.fit(X, y)
-    docs = {'name': "XGBModel test"}
-    fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
-    print("Tested xgboost, XGBModel...")
-
-
 def test_xg_XGBRegressor():
     mod = XGBRegressor()
     X, y = iris_data

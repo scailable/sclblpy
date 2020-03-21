@@ -263,7 +263,6 @@ Install package locally using ``pip install -e .``
 
 | Name                           | Package               | Direct transpile (at 21-02-2020) | ONNX transpile (sometime 2020) |
 | :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
-| XGBModel                       | XGboost               | Yes                              |                                |
 | XGBClassifier                  | XGboost               | Yes                              |                                |
 | XGBRegressor                   | XGboost               | Yes                              |                                |
 | XGBRFClassifier                | XGboost               | Yes                              |                                |

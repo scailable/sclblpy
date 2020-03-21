@@ -53,3 +53,18 @@ fv = X[0, :]
 upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
 print("Tested SM, OLS...")
 
+
+########################################################
+
+
+from xgboost import XGBRegressor
+
+mod = XGBRegressor()
+X, y = iris_data
+mod.fit(X[:120], y[:120])
+
+docs = {'name': "XGBRegressor test"}
+fv = X[0, :]
+upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+print("Tested xgboost, XGBRegressor...")
+
