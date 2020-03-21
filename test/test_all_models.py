@@ -15,11 +15,13 @@ from sklearn import tree
 from sklearn import ensemble
 from sklearn import svm
 
+# noinspection PyUnresolvedReferences
 from xgboost import XGBClassifier
-from xgboost import XGBModel
-from xgboost import XGBRanker
+# noinspection PyUnresolvedReferences
 from xgboost import XGBRegressor
+# noinspection PyUnresolvedReferences
 from xgboost import XGBRFClassifier
+# noinspection PyUnresolvedReferences
 from xgboost import XGBRFRegressor
 
 from sclblpy import upload
@@ -36,8 +38,8 @@ iris_data = datasets.load_iris(return_X_y=True)
 # https://www.statsmodels.org/stable/examples/index.html
 def test_sm_OLS():
     X, y = iris_data
-    mod = sm.OLS(y, X)
-    mod.fit()
+    estimator = sm.OLS(y, X)
+    mod = estimator.fit()
     docs = {'name': "OLS test"}
     fv = X[0, :]
     upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
@@ -47,8 +49,8 @@ def test_sm_OLS():
 def test_sm_GLS():
     data = sm.datasets.longley.load(as_pandas=False)
     X = sm.add_constant(data.exog)
-    mod = sm.GLS(data.endog, X, sigma=1)
-    mod.fit()
+    estimator = sm.GLS(data.endog, X, sigma=1)
+    mod = estimator.fit()
     docs = {'name': "GLS test"}
     fv = X[0, :]
     upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
@@ -59,8 +61,8 @@ def test_sm_WLS():
     Y = [1, 3, 4, 5, 2, 3, 4]
     X = range(1, 8)
     X = sm.add_constant(X)
-    mod = sm.WLS(Y, X, weights=list(range(1, 8)))
-    mod.fit()
+    estimator = sm.WLS(Y, X, weights=list(range(1, 8)))
+    mod = estimator.fit()
     docs = {'name': "WLS test"}
     fv = X[0, :]
     upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
@@ -76,16 +78,6 @@ def test_sk_ARDRegression():
     fv = X[0, :]
     upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
     print("Tested sklearn, ARDRegression...")
-
-
-def test_sk_BayesianRidge():
-    mod = linear_model.BayesianRidge()
-    X, y = iris_data
-    mod.fit(X, y)
-    docs = {'name': "BayesianRidge test"}
-    fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
-    print("Tested sklearn, BayesianRidge...")
 
 
 def test_sk_DecisionTreeClassifier():
@@ -479,9 +471,6 @@ def test_xg_XGBRFRegressor():
     print("Tested xgboost, XGBRFRegressor...")
 
 
-
-
-
 if __name__ == '__main__':
     print("Running tests off all supported models. This might take some time")
     print("===============================")
@@ -494,7 +483,6 @@ if __name__ == '__main__':
     time.sleep(1)
     print("# SciKit Learn:")
     test_sk_ARDRegression()
-    test_sk_BayesianRidge()
     test_sk_DecisionTreeClassifier()
     test_sk_DecisionTreeRegressor()
     test_sk_ElasticNet()
@@ -547,7 +535,6 @@ if __name__ == '__main__':
 
     time.sleep(1)
     print("# XGBoost Learn:")
-    test_xg_XGBModel()
     test_xg_XGBRegressor()
     test_xg_XGBClassifier()
     test_xg_XGBRFClassifier()
