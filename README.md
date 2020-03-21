@@ -1,6 +1,6 @@
 # sclblpy
-> Last edited 06-03-2020; McK.
-> All functionality implemented and passing all tests. However, more functional tests neccessary.
+> Last edited 21-03-2020; RvE.
+> Added SkLearn-Contrib Lightning and LGBMBoost
 
 ## Todo
 Test, test, and retest....
@@ -67,18 +67,18 @@ Install package locally using ``pip install -e .``
 
 ### StatsModels [[link](https://www.statsmodels.org/stable/about.html#about-statsmodels)]
 
-| Name                      | Package     | Direct transpile (at 21-02-2020) | ONNX transpile (sometime 2020) |
+| Name                      | Package     | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
 | :------------------------ | :---------- | -------------------------------- | :----------------------------- |
 | Generalized Least Squares | StatsModels | Yes                              |                                |
 | Ordinary Least Squares    | StatsModels | Yes                              |                                |
 | Weighted Least Squares    | StatsModels | Yes                              |                                |
-
-
+| Process Regression Using Maximum Likelihood-based Estimation | StatsModels | Yes           |                |
+| Quantile Regression                                          | StatsModels | Yes           |                |
+| Generalized Least Squares with AR Errors                     | StatsModels | Yes           |                |
 
 ### Scikit-learn [[link](https://scikit-learn.org/stable/)]
 
-
-| Name                           | Package               | Direct transpile (at 21-02-2020) | ONNX transpile (sometime 2020) |
+| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
 | :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
 | ARDRegression                  | linear_model          | Yes                              | Yes                            |
 | AdaBoostClassifier             | ensemble              |                                  | Yes                            |
@@ -261,12 +261,42 @@ Install package locally using ``pip install -e .``
 
 ### XGBoost [[link](https://xgboost.readthedocs.io/en/latest/)]
 
-| Name                           | Package               | Direct transpile (at 21-02-2020) | ONNX transpile (sometime 2020) |
+| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
 | :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
 | XGBClassifier                  | XGboost               | Yes                              |                                |
 | XGBRegressor                   | XGboost               | Yes                              |                                |
 | XGBRFClassifier                | XGboost               | Yes                              |                                |
 | XGBRFRegressor                 | XGboost               | Yes                              |                                |
+
+### LightGBM [[link](https://lightgbm.readthedocs.io/en/latest/)]
+
+| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
+| :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
+| LGBMClassifier                 | LightGBM              | Yes                              |                                |
+| LGBMRegressor                  | lightGBM              | Yes                              |                                |
+
+### lightning [[link](http://contrib.scikit-learn.org/lightning/)]
+
+| Name               | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
+| :------------------| :-------------------- | -------------------------------- | :----------------------------- |
+| AdaGradClassifier  | linear_model          | Yes                              |                                |
+| AdaGradRegressor   | ensemble              | Yes                              |                                |
+| CDClassifier       | ensemble              | Yes                              |                                |
+| CDRegressor        | kernel_approximation  | Yes                              |                                |
+| FistaClassifier    | cluster               | Yes                              |                                |
+| FistaRegressor     | cluster               | Yes                              |                                |
+| KernelSVC          | ensemble              | Yes                              |                                |
+| LinearSVC          | ensemble              | Yes                              |                                |
+| LinearSVR          | tree                  | Yes                              |                                |
+| SAGAClassifier     | ensemble              | Yes                              |                                |      
+| SAGARegressor      | mixture               | Yes                              |                                |      
+| SAGClassifier      | linear_model          | Yes                              |                                |      
+| SAGRegressor       | naive_bayes           | Yes                              |                                |      
+| SDCAClassifier     | neural_network        | Yes                              |                                |      
+| SDCARegressor      | preprocessing         | Yes                              |                                |      
+| SGDClassifier      | cluster               | Yes                              |                                |     
+
+
 
 ## References:
 
