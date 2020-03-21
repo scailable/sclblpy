@@ -2,9 +2,9 @@
 # This might take a while..
 # Note: these are first function tests, not extensive simulations of each type of model.
 #    ... effectively they can be seen as "syntax" test.
-# Note: ignoring convention to have function names lowercase to align with sklearn.
 
 # Todo(McK): Add fully functional test ensuring upload to toolchain and .wasm check.
+
 import time
 
 import statsmodels.api as sm
