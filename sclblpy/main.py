@@ -46,7 +46,8 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     bundle['fitted_model'] = mod
 
     if feature_vector.any():
-        example = {'input': feature_vector.tolist()}
+        inputStr = '[%s]' % ', '.join([str(i) for i in feature_vector.tolist()])
+        example = {'input': inputStr}
         try:
             output = _predict(mod, feature_vector)
             example["output"] = json.dumps(output)
@@ -102,11 +103,14 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
 
         # Setup the actual request
         # Todo(Mck): Currently name and docs are both in the bundle AND in the data. Check.
+        # Todo(RvE): Same for in/out example..
         data: dict = {
             'package': glob.PKG_NAME,
             'toolchain': toolchain_name,
             'name': bundle['docs'].get('name', "No name found."),
-            'docs': bundle['docs'].get('documentation', "No docs provided.")
+            'docs': bundle['docs'].get('documentation', "No docs provided."),
+            'exampleinput': bundle['example'].get('input', "[]"),
+            'exampleoutput': bundle['example'].get('output', "[]")
         }
         payload: dict = {
             'data': json.dumps(data)
