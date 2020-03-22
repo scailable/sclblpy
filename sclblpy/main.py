@@ -1,7 +1,5 @@
 # File contains all public methods of the scblpy package
 import json
-import sys
-import warnings
 import numpy as np
 import requests
 
@@ -12,7 +10,7 @@ from sclblpy._utils import _check_model, _get_model_name, _get_system_info, _pre
 from sclblpy.errors import ModelSupportError, UserManagerError, JWTError
 
 
-def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False):
+def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=False):
     """Uploads a fitted sklearn model to Scailable.
 
     The upload function is the main workhorse of the sclblpy package.
@@ -44,19 +42,11 @@ def upload(mod, docs={}, feature_vector=np.empty(0), _verbose=False, _keep=False
     """
     bundle = {}
 
-    try:
-        model_ok = _check_model(mod)
-    except ModelSupportError as e:
-        print("FATAL: The model you are trying to upload is not (yet) supported. \n"
-              "Please see README.md for a list of supported models.")
-        if _verbose:
-            print(str(e))
-        return False
+
     bundle['fitted_model'] = mod
 
     if feature_vector.any():
-        example = {}
-        example['input'] = feature_vector.tolist()
+        example = {'input': feature_vector.tolist()}
         try:
             output = _predict(mod, feature_vector)
             example["output"] = json.dumps(output)
@@ -179,7 +169,7 @@ def endpoints(_verbose=True):
 
     """
     try:
-        auth = _check_jwt()
+        _check_jwt()
     except Exception as e:
         if _verbose:
             print(str(e))
@@ -220,7 +210,7 @@ def delete_endpoint(cfid: str, _verbose=True):
         UserManagerError if unable to delete endpoints
     """
     try:
-        auth = _check_jwt()
+        _check_jwt()
     except Exception as e:
         if _verbose:
             print(str(e))

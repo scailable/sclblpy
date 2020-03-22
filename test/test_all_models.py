@@ -15,13 +15,9 @@ from sklearn import tree
 from sklearn import ensemble
 from sklearn import svm
 
-# noinspection PyUnresolvedReferences
 from xgboost import XGBClassifier
-# noinspection PyUnresolvedReferences
 from xgboost import XGBRegressor
-# noinspection PyUnresolvedReferences
 from xgboost import XGBRFClassifier
-# noinspection PyUnresolvedReferences
 from xgboost import XGBRFRegressor
 
 from sclblpy import upload
