@@ -46,7 +46,7 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     bundle['fitted_model'] = mod
 
     if feature_vector.any():
-        inputStr = '[%s]' % ', '.join([str(i) for i in feature_vector.tolist()])
+        inputStr = '[[%s]]' % ', '.join([str(i) for i in feature_vector.tolist()])
         example = {'input': inputStr}
         try:
             output = _predict(mod, feature_vector)
