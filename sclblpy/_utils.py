@@ -158,7 +158,6 @@ def _model_is_fitted(estimator):
     if hasattr(estimator, 'fittedvalues'):
         return True
 
-
     # XGboost exception
     if _get_model_package(estimator) == "xgboost":
         try:

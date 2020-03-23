@@ -1,12 +1,7 @@
 # Testing the upload function for all supported models.
 # This might take a while..
-# Note: these are first function tests, not extensive simulations of each type of model.
-#    ... effectively they can be seen as "syntax" test.
-
-# Todo(McK): Add fully functional test ensuring upload to toolchain and .wasm check.
 
 import time
-
 import statsmodels.api as sm
 
 from sklearn import datasets
@@ -24,11 +19,12 @@ from sclblpy import upload
 from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
-# Ugly script globals..
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
 PRINT_ALL = False  # Verbose output?
 TEAR_DOWN = True  # Remove all endpoints?
-iris_data = datasets.load_iris(return_X_y=True)
 
+iris_data = datasets.load_iris(return_X_y=True)
 
 # StatsModels
 # https://www.statsmodels.org/stable/examples/index.html
@@ -468,6 +464,11 @@ def test_xg_XGBRFRegressor():
 
 
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running tests off all supported models. This might take some time")
     print("===============================")
 

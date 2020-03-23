@@ -6,8 +6,8 @@ import requests
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
-from sclblpy._utils import _check_model, _get_model_name, _get_system_info, _predict, _get_model_package
-from sclblpy.errors import ModelSupportError, UserManagerError, JWTError
+from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models
+from sclblpy.errors import UserManagerError, JWTError
 
 
 def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=False):
@@ -41,8 +41,6 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     Raises:
     """
     bundle = {}
-
-
     bundle['fitted_model'] = mod
 
     if feature_vector.any():
@@ -52,13 +50,15 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
             output = _predict(mod, feature_vector)
             example["output"] = json.dumps(output)
         except Exception as e:
-            print("WARNING: we were unable to create an example inference.")
+            if not glob.SILENT:
+                print("WARNING: we were unable to create an example inference.")
             if _verbose:
                 print("Unable to predict: " + str(e))
         bundle['example'] = example
     else:
-        print("WARNING: You did not provide an example instance. (see docs). \n"
-              "Providing an example allows us automatically generate and test your feature vector.")
+        if not glob.SILENT:
+            print("WARNING: You did not provide an example instance. (see docs). \n"
+                  "Providing an example allows us automatically generate and test your feature vector.")
 
     bundle['docs'] = {}
     if docs:
@@ -66,15 +66,17 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     else:
         bundle['docs']['name'] = _get_model_name(mod)
         bundle['docs']['documentation'] = "None."
-        print("WARNING: You did not provide any documentation. We will simply use \n"
-              "the name of your model as its title.")
+        if not glob.SILENT:
+            print("WARNING: You did not provide any documentation. We will simply use \n"
+                  "the name of your model as its title.")
 
     bundle['system_info'] = _get_system_info()
 
     try:
         _gzip_save(bundle)
     except Exception as e:
-        print("FATAL: Unable to gzip your model bundle. Your model has not been uploaded.")
+        if not glob.SILENT:
+            print("FATAL: Unable to gzip your model bundle. Your model has not been uploaded.")
         if _verbose:
             print(str(e))
         return False
@@ -82,7 +84,8 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     try:
         auth = _check_jwt()
     except Exception as e:
-        print("FATAL: Unable to obtain JWT authorization for your account. Your model has not been uploaded.")
+        if not glob.SILENT:
+            print("FATAL: Unable to obtain JWT authorization for your account. Your model has not been uploaded.")
         if _verbose:
             print(str(e))
         return False
@@ -102,8 +105,6 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
             toolchain_name = "sklearn"
 
         # Setup the actual request
-        # Todo(Mck): Currently name and docs are both in the bundle AND in the data. Check.
-        # Todo(RvE): Same for in/out example..
         data: dict = {
             'package': glob.PKG_NAME,
             'toolchain': toolchain_name,
@@ -118,14 +119,15 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
 
         files = [('bundle', open(glob.BUNDLE_NAME, 'rb'))]
         headers = {
-             'Authorization': glob.JWT_TOKEN
+            'Authorization': glob.JWT_TOKEN
         }
 
         # Do the request
         try:
             response = requests.post(url, headers=headers, data=payload, files=files)
         except Exception as e:
-            print("FATAL: Unable to carry out the upload request. Your model has not been uploaded.")
+            if not glob.SILENT:
+                print("FATAL: Unable to carry out the upload request. Your model has not been uploaded.")
             if _verbose:
                 print(str(e))
             return False
@@ -134,13 +136,15 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
         try:
             response_data = json.loads(response.text)
         except Exception as e:
-            print("FATAL: No valid JSON response received. Your model has not been uploaded.")
+            if not glob.SILENT:
+                print("FATAL: No valid JSON response received. Your model has not been uploaded.")
             if _verbose:
                 print(str(e))
             return False
 
         if response_data['error']:
-            print("FATAL: Error returned from server. Your model has not been uploaded.")
+            if not glob.SILENT:
+                print("FATAL: Error returned from server. Your model has not been uploaded.")
             if _verbose:
                 print(str(response_data['error']))
             return False
@@ -188,16 +192,19 @@ def endpoints(_verbose=True):
         response = requests.request("GET", url, headers=headers, data={})
         result = json.loads(response.text)
     except Exception as e:
+        if _verbose:
+            print(str(e))
         raise UserManagerError("Unable to retrieve endpoints. " + str(e))
 
-    if _verbose:
+    if not glob.SILENT:
         print("You currently own the following endpoints:")
         for key in result:
             print('Name: {}, cfid: {}.'.format(key['name'], key['cfid']))
+
     return result
 
 
-def delete_endpoint(cfid: str, _verbose=True):
+def delete_endpoint(cfid: str, _verbose=False):
     """Deletes an endpoint by cfid.
 
     Delete an endpoint owned by the currently logged in user by cfid.
@@ -228,14 +235,17 @@ def delete_endpoint(cfid: str, _verbose=True):
         response = requests.request("DELETE", url, headers=headers, data={})
         result = json.loads(response.text)
     except Exception as e:
+        if _verbose:
+            print(str(e))
         raise UserManagerError("Unable to delete endpoint. " + str(e))
 
-    if _verbose:
+    if not glob.SILENT:
         print(result['message'])
-    return
+
+    return True
 
 
-def remove_credentials(_verbose=False):
+def remove_credentials(_verbose=True):
     """Remove your stored credentials.
 
     Remove the .creds.json file that stores the username and password
@@ -244,8 +254,62 @@ def remove_credentials(_verbose=False):
     Args:
         _verbose: Boolean indicator whether or not feedback should be printed. Default False.
     """
+    # If silent, be silent:
+    if glob.SILENT:
+        _verbose =  False
+
     # actual function in _utils.py to prevent circular includes.
     _remove_credentials(_verbose)
+
+
+def stop_print():
+    """Stop ALL printing from package"""
+    glob.SILENT = True
+
+
+def start_print():
+    """Start printing user feedback"""
+    print("Printing user feedback set to 'True'.")
+    glob.SILENT = False
+
+
+def list_models():
+    """Print or return a list of all supported models.
+
+    Returns:
+        A dictionary detailing the supported models
+    """
+    if not glob.SUPPORTED_MODELS:
+        _load_supported_models()
+
+    if not glob.SILENT:
+        print(glob.SUPPORTED_MODELS)
+
+    return glob.SUPPORTED_MODELS
+
+
+def _set_toolchain_URL(url: str):
+    """Change the location of the toolchain server
+
+    Args:
+        url: String specifying the location of the toolchain server
+    """
+    glob.TOOLCHAIN_URL = url
+
+    if not glob.SILENT:
+        print("Toolchain url changed to: " + glob.TOOLCHAIN_URL)
+
+
+def _set_admin_URL(url: str):
+    """Change the location of the toolchain server
+
+    Args:
+        url: String specifying the location of the toolchain server
+    """
+    glob.USER_MANAGER_URL = url
+
+    if not glob.SILENT:
+        print("User-manager (admin) url changed to: " + glob.USER_MANAGER_URL)
 
 
 if __name__ == '__main__':

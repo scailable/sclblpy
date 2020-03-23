@@ -3,6 +3,8 @@ import time
 from sclblpy._jwt import _check_jwt, _sign_in, _remove_credentials, _get_user_details
 from sclblpy.errors import LoginError, JWTError
 
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
 
 def test_JWT():
     """ Test __check_jwt() function """
@@ -68,6 +70,11 @@ def test_get_user_details():
 
 # Run tests
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running tests of _jwt.py")
     print("These take a few seconds to simulate refreshing etc.")
     print("===============================")

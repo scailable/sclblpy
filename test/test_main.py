@@ -3,11 +3,16 @@ import time
 
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
-from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint
+from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, _set_admin_URL, \
+    list_models, start_print, stop_print
 
 from sklearn import svm
 from sklearn import datasets
 
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
+ADMIN_URL = "http://localhost:8010"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost:8008"  # Location of toolchain for this test
 
 def test_upload():
     """ Test the upload function"""
@@ -69,11 +74,33 @@ def test_delete_endpoint():
         delete_endpoint(cfid)
 
 
+def test_setting_URLs():
+    """ Test url setters: """
+    _set_toolchain_URL(TOOLCHAIN_URL)
+    _set_admin_URL(ADMIN_URL)
+
+
+def test_user_utils():
+    start_print()
+    list_models()
+    stop_print()
+    list_models()
+    start_print()
+
+
 # Run tests
 if __name__ == '__main__':
+
+    test_user_utils()
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running simple functional tests of main.py")
     print("===============================")
 
+    test_setting_URLs()
     test_upload()
     test_remove_credentials()
     test_endpoints()
