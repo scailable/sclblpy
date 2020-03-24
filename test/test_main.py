@@ -91,7 +91,7 @@ def test_user_utils():
 # Run tests
 if __name__ == '__main__':
 
-    test_user_utils()
+
 
     if not RUN_TESTS:
         print("Not running tests.")
@@ -100,6 +100,9 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
+
+    test_user_utils()
+    # stop_print()
     test_setting_URLs()
     test_upload()
     test_remove_credentials()

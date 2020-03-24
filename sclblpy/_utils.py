@@ -13,6 +13,7 @@ from sklearn.exceptions import NotFittedError
 from sclblpy.errors import ModelSupportError, GeneratePredictionError
 import sclblpy._globals as glob
 
+
 def _check_model(obj) -> bool:
     """Checks whether a model can be uploaded to Scailable.
 
@@ -155,8 +156,13 @@ def _model_is_fitted(estimator):
         return estimator._is_fitted()
 
     # statsmodels:
-    if hasattr(estimator, 'fittedvalues'):
-        return True
+    # if hasattr(estimator, 'fittedvalues'):
+    #   return True
+    if hasattr(estimator, '_df_model'):
+        if estimator._df_model is None:
+            return False
+        else:
+            return True
 
     # XGboost exception
     if _get_model_package(estimator) == "xgboost":
@@ -201,8 +207,10 @@ def _predict(mod, feature_vector, _verbose=False):
             raise GeneratePredictionError("Unable to generate sklearn prediction")
     elif package == "statsmodels":
         try:
-            result = mod.predict(feature_vector.reshape(1, -1))
+            result = mod.fit().predict(feature_vector.reshape(1, -1))
             return result.tolist()
+            # result = mod.predict(feature_vector.reshape(1, -1))
+            # return result.tolist()
         except Exception as e:
             if _verbose:
                 print("Unable to generate statstmodels prediction: " + str(e))

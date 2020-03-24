@@ -72,8 +72,6 @@ def test_model_is_fitted():
     assert _model_is_fitted(xgb) == True, "This one should be fitted"
 
 
-
-
 def test_predict():
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)

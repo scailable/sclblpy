@@ -15,13 +15,15 @@ from xgboost import XGBRegressor
 from xgboost import XGBRFClassifier
 from xgboost import XGBRFRegressor
 
-from sclblpy import upload
+from sclblpy import upload, _set_toolchain_URL, _set_admin_URL
 from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
 # Script settings:
 RUN_TESTS = False  # Prevent unintended testing
-PRINT_ALL = False  # Verbose output?
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+PRINT_ALL = True  # Verbose output?
 TEAR_DOWN = True  # Remove all endpoints?
 
 iris_data = datasets.load_iris(return_X_y=True)
@@ -468,6 +470,10 @@ if __name__ == '__main__':
     if not RUN_TESTS:
         print("Not running tests.")
         exit()
+
+    # Set correct endpoints
+    _set_toolchain_URL(TOOLCHAIN_URL)
+    _set_admin_URL(ADMIN_URL)
 
     print("Running tests off all supported models. This might take some time")
     print("===============================")
