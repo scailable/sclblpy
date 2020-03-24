@@ -197,6 +197,7 @@ def endpoints(_verbose=True):
             print(str(e))
         raise UserManagerError("Unable to retrieve endpoints. " + str(e))
 
+    # Todo (McK): Print nicer message if 0.
     if not glob.SILENT:
         print("You currently own the following endpoints:")
         for key in result:
