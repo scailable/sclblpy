@@ -1,12 +1,7 @@
 # Testing the upload function for all supported models.
 # This might take a while..
-# Note: these are first function tests, not extensive simulations of each type of model.
-#    ... effectively they can be seen as "syntax" test.
-
-# Todo(McK): Add fully functional test ensuring upload to toolchain and .wasm check.
 
 import time
-
 import statsmodels.api as sm
 
 from sklearn import datasets
@@ -20,15 +15,18 @@ from xgboost import XGBRegressor
 from xgboost import XGBRFClassifier
 from xgboost import XGBRFRegressor
 
-from sclblpy import upload
+from sclblpy import upload, _set_toolchain_URL, _set_admin_URL
 from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
-# Ugly script globals..
-PRINT_ALL = False  # Verbose output?
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+PRINT_ALL = True  # Verbose output?
 TEAR_DOWN = True  # Remove all endpoints?
-iris_data = datasets.load_iris(return_X_y=True)
 
+iris_data = datasets.load_iris(return_X_y=True)
 
 # StatsModels
 # https://www.statsmodels.org/stable/examples/index.html
@@ -468,6 +466,15 @@ def test_xg_XGBRFRegressor():
 
 
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
+    # Set correct endpoints
+    _set_toolchain_URL(TOOLCHAIN_URL)
+    _set_admin_URL(ADMIN_URL)
+
     print("Running tests off all supported models. This might take some time")
     print("===============================")
 

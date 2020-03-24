@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sclblpy",
-    version="0.0.2",
+    version="0.0.5",
     author="Maurits Kaptein",
     author_email="maurits.kaptein@scailable.net",
     description="Python package for uploading models to Scailable toolchain.",
@@ -18,5 +18,11 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    install_requires=[
+        'numpy',
+        'requests',
+        'uuid',
+        'sklearn',
+      ],
     python_requires='>=3.6',
 )

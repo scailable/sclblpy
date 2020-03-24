@@ -1,8 +1,13 @@
 import time
 
+from sclblpy import _set_toolchain_URL, _set_admin_URL
 from sclblpy._jwt import _check_jwt, _sign_in, _remove_credentials, _get_user_details
 from sclblpy.errors import LoginError, JWTError
 
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 
 def test_JWT():
     """ Test __check_jwt() function """
@@ -68,9 +73,18 @@ def test_get_user_details():
 
 # Run tests
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running tests of _jwt.py")
     print("These take a few seconds to simulate refreshing etc.")
     print("===============================")
+
+    # Set correct endpoints
+    _set_toolchain_URL(TOOLCHAIN_URL)
+    _set_admin_URL(ADMIN_URL)
 
     test_signin()
     test_get_user_details()

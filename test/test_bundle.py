@@ -1,6 +1,8 @@
 # Simple unit tests for _bundly.py
 from sclblpy._bundle import _gzip_save, _gzip_load, _gzip_delete
 
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
 
 def test_gzip_save():
     """Test gzip save. """
@@ -24,6 +26,11 @@ def test_gzip_delete():
 
 # Run tests:
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running tests of _bundle.py")
     print("===============================")
 

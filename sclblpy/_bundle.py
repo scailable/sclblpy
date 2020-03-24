@@ -26,11 +26,7 @@ def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
     """
     try:
         fp = gzip.open(filename, 'wb')
-        # protocol = 2 to be backward compatible with python 2
-        # protocol = 3 to be backward compatible with *all* versions of python 3
-        # protocol = 4 is python 3.4 or higher   <----- as long as package is python 3.6 or higher, protocol 4
-        # protocol = 5 is python 3.8 or higher
-        pickle.dump(object, fp, protocol=4)
+        pickle.dump(object, fp, protocol=4)  # protocol = 4 is python 3.4 or higher
         fp.close()
         if _verbose:
             print("File successfully stored.")

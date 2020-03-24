@@ -1,30 +1,61 @@
 # sclblpy
-> Last edited 21-03-2020; RvE.
-> Added SkLearn-Contrib Lightning and LGBMBoost
 
-## Todo
-Test, test, and retest....
+sclblpy is the core python package provided by Scailable to convert models fit in python to WebAssembly and
+open them up as a REST endpoint. 
 
-## Info
+sclblpy is only functional in combination with a valid Scailable user account.
 
-Python package for Scailable uploads
+- **Website:** [https://www.scailable.net](https://www.scailable.net)
+- **Docs:** [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
+- **Account:** [https://admin.sclbl.net](https://admin.sclbl.net)
+- **Source:**[https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
 
-Functionally this package allows one to upload fitted models to Scailable after authentication using JWT:
+## Background
+The sclblpy package allows users with a valid scailable account (see [https://admin.sclbl.net](https://admin.sclbl.net))
+to upload fitted ML / AI models to the Scailable toolchain server. This will result in:
+
+1. The model being tested on the client side.
+2. The model being uploaded to Scailable, tested again, and if all test pass it will be converted to [WebAssembly](https://webassembly.org).
+3. The model being made available as an easy to access REST endpoint.
+
+## Getting started
+After installing the package using `pip install sclblpy` you can easily fit a ML / AI model using your preferred tools and
+upload it to our toolchains. The following code block provides a simple example:
+
 ````
-# Import the package:
+# Neccesary imports:
 import sclblpy as sp
 
-# Fit a model
-...
+from sklearn import svm
+from sklearn import datasets
 
-# Upload a model including documentation and an example feature vector
-sp.upload(mod, docs, feature_vector)
+# Start fitting a simple model:
+clf = svm.SVC()
+X, y = datasets.load_iris(return_X_y=True)
+clf.fit(X, y)
+
+# Create documentation (optional):
+docs = {}
+docs['name'] = "My first fitted model"
+docs['documentation'] = "Any documentation you would like to provide."
+
+# Create an example feature vector (optional, but very useful):
+row = X[130, :]
+
+# Upload the model:
+sp.upload(clf, docs, feature_vector=row)
 ````
 
-Note that upon first upload the user will be prompted to provide the Scailable username and password 
-(users can signup for an account at [https://www.scailable.net/admin/signup](https://www.scailable.net/admin/signup)).
+The call to `sp.upload()` will upload the fitted model, after running a number of local tests, to the 
+Scailable toolchain server and create an associated REST endpoint. Limited user feedback will be printed to show progress,
+and you will receive an email at the email address associated with your account when the conversion is fully completed (which might take a few minutes).
+This email also contains further details regarding the usage of your created endpoint.
 
-## Further exposed functions
+Note that upon first upload you will be prompted to provide your Scailable username and password; you can choose to
+store the provided credentials locally to enable easy login on subsequently uploads. (users can signup for an account at
+ [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)).
+
+## Additional functionality
 Next to the main ``upload()`` function, the package also exposes the following functions to administer endpoints:
 
 ````
@@ -35,270 +66,50 @@ sp.endpoints()
 sp.delete_endpoint("cfid-cfid-cfid")
 ````
 
-Finally, the package exposes
+Additionally, the following methods are available:
 
 ````
-# Remove stored user credentials
+# List all models currently supported by our toolchains:
+sp.list_models()  
+
+# Prevent any user feedback from being printed:
+sp.stop_print()  
+
+# Turn user feedback back on:
+sp.start_print()  
+
+# Remove locally stored user credentials:
 sp.remove_credentials()
 
 ````
-
-## Testing
-Initial tests are available for all functionality. Run
-````
-python test_bundle.py
-python test_jwt.py
-python test_utils.py
-python test_main.py
-python test_all_models.py
-````
-inside ``/test/``. 
-
-> Running the tests requires and active account.
-
-
-## Notes:
-Install package locally using ``pip install -e .``
+Note that many of the exposed functions have an optional argument `_verbose` which by default is `False`; setting
+it to `True` will provide additional error messaging which might be useful for debugging.
 
 ## Dependencies
-- ``requests``
 
-# Currently supported models:
+sclblpy needs python 3, and has been tested on python `> 3.7`. Furthermore, dependent on usage, sclblpy will import
+the following packages:
 
-### StatsModels [[link](https://www.statsmodels.org/stable/about.html#about-statsmodels)]
+* `json`
+* `numpy`
+* `requests`
+* `gzip`
+* `pickle`
+* `os`
+* `warnings`
+* `time`
+* `getpass`
+* `platform`
+* `re`
+* `socket`
+* `sys`
+* `uuid`
+* `sklearn`
 
-| Name                      | Package     | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
-| :------------------------ | :---------- | -------------------------------- | :----------------------------- |
-| Generalized Least Squares | StatsModels | Yes                              |                                |
-| Ordinary Least Squares    | StatsModels | Yes                              |                                |
-| Weighted Least Squares    | StatsModels | Yes                              |                                |
-| Process Regression Using Maximum Likelihood-based Estimation | StatsModels | Yes           |                |
-| Quantile Regression                                          | StatsModels | Yes           |                |
-| Generalized Least Squares with AR Errors                     | StatsModels | Yes           |                |
+## Notes:
 
-### Scikit-learn [[link](https://scikit-learn.org/stable/)]
+* We try to stick to the naming conventions in [http://google.github.io/styleguide/pyguide.html](http://google.github.io/styleguide/pyguide.html).
+* The methods `_set_toolchain_URL(string)` and `_set_admin_URL(string)` can be used to change the default location of
+the toolchain and user-management function. These are useful when running the Scailable stack locally. 
 
-| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
-| :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
-| ARDRegression                  | linear_model          | Yes                              | Yes                            |
-| AdaBoostClassifier             | ensemble              |                                  | Yes                            |
-| AdaBoostRegressor              | ensemble              |                                  | Yes                            |
-| AdditiveChi2Sampler            | kernel_approximation  |                                  |                                |
-| AffinityPropagation            | cluster               |                                  |                                |
-| AgglomerativeClustering        | cluster               |                                  |                                |
-| BaggingClassifier              | ensemble              |                                  | Yes                            |
-| BaggingRegressor               | ensemble              |                                  | Yes                            |
-| BaseDecisionTree               | tree                  |                                  |                                |
-| BaseEnsemble                   | ensemble              |                                  |                                |
-| BayesianGaussianMixture        | mixture               |                                  | Yes                            |
-| BayesianRidge                  | linear_model          | Yes                              | Yes                            |
-| BernoulliNB                    | naive_bayes           |                                  | Yes                            |
-| BernoulliRBM                   | neural_network        |                                  |                                |
-| Binarizer                      | preprocessing         |                                  | Yes                            |
-| Birch                          | cluster               |                                  |                                |
-| CCA                            | cross_decomposition   |                                  |                                |
-| CalibratedClassifierCV         | calibration           |                                  | Yes                            |
-| CategoricalNB                  | naive_bayes           |                                  |                                |
-| ClassifierChain                | multioutput           |                                  |                                |
-| ComplementNB                   | naive_bayes           |                                  | Yes                            |
-| DBSCAN                         | cluster               |                                  |                                |
-| DecisionTreeClassifier         | tree                  | Yes                              | Yes                            |
-| DecisionTreeRegressor          | tree                  | Yes                              | Yes                            |
-| DictVectorizer                 | feature_extraction    |                                  | Yes                            |
-| DictionaryLearning             | decomposition         |                                  |                                |
-| ElasticNet                     | linear_model          | Yes                              | Yes                            |
-| ElasticNetCV                   | linear_model          | Yes                              | Yes                            |
-| EllipticEnvelope               | covariance            |                                  |                                |
-| EmpiricalCovariance            | covariance            |                                  |                                |
-| ExtraTreeClassifier            | tree                  | Yes                              | Yes                            |
-| ExtraTreeRegressor             | tree                  | Yes                              | Yes                            |
-| ExtraTreesClassifier           | ensemble              | Yes                              | Yes                            |
-| ExtraTreesRegressor            | ensemble              | Yes                              | Yes                            |
-| FactorAnalysis                 | decomposition         |                                  |                                |
-| FastICA                        | decomposition         |                                  |                                |
-| FeatureAgglomeration           | cluster               |                                  |                                |
-| FeatureHasher                  | feature_extraction    |                                  |                                |
-| FunctionTransformer            | preprocessing         |                                  | Yes                            |
-| GaussianMixture                | mixture               |                                  | Yes                            |
-| GaussianNB                     | naive_bayes           |                                  | Yes                            |
-| GaussianProcessClassifier      | gaussian_process      |                                  |                                |
-| GaussianProcessRegressor       | gaussian_process      |                                  | Yes                            |
-| GaussianRandomProjection       | random_projection     |                                  |                                |
-| GenericUnivariateSelect        | feature_selection     |                                  | Yes                            |
-| GradientBoostingClassifier     | ensemble              |                                  | Yes                            |
-| GradientBoostingRegressor      | ensemble              |                                  | Yes                            |
-| GraphicalLasso                 | covariance            |                                  |                                |
-| GraphicalLassoCV               | covariance            |                                  |                                |
-| GridSearchCV                   | model_selection       |                                  | Yes                            |
-| HuberRegressor                 | linear_model          | Yes                              | Yes                            |
-| IncrementalPCA                 | decomposition         |                                  | Yes                            |
-| IsolationForest                | ensemble              |                                  |                                |
-| IsotonicRegression             | isotonic              |                                  |                                |
-| KBinsDiscretizer               | preprocessing         |                                  | Yes                            |
-| KMeans                         | cluster               |                                  | Yes                            |
-| KNNImputer                     | impute                |                                  |                                |
-| KNeighborsClassifier           | neighbors             |                                  | Yes                            |
-| KNeighborsRegressor            | neighbors             |                                  | Yes                            |
-| KNeighborsTransformer          | neighbors             |                                  |                                |
-| KernelCenterer                 | preprocessing         |                                  |                                |
-| KernelDensity                  | neighbors             |                                  |                                |
-| KernelPCA                      | decomposition         |                                  |                                |
-| KernelRidge                    | kernel_ridge          |                                  |                                |
-| LabelBinarizer                 | preprocessing         |                                  | Yes                            |
-| LabelEncoder                   | preprocessing         |                                  | Yes                            |
-| LabelPropagation               | semi_supervised       |                                  |                                |
-| LabelSpreading                 | semi_supervised       |                                  |                                |
-| Lars                           | linear_model          | Yes                              | Yes                            |
-| LarsCV                         | linear_model          | Yes                              | Yes                            |
-| Lasso                          | linear_model          | Yes                              | Yes                            |
-| LassoCV                        | linear_model          | Yes                              | Yes                            |
-| LassoLars                      | linear_model          | Yes                              | Yes                            |
-| LassoLarsCV                    | linear_model          | Yes                              | Yes                            |
-| LassoLarsIC                    | linear_model          | Yes                              | Yes                            |
-| LatentDirichletAllocation      | decomposition         |                                  |                                |
-| LedoitWolf                     | covariance            |                                  |                                |
-| LinearDiscriminantAnalysis     | discriminant_analysis |                                  | Yes                            |
-| LinearRegression               | linear_model          | Yes                              | Yes                            |
-| LinearSVC                      | svm                   | Yes                              | Yes                            |
-| LinearSVR                      | svm                   | Yes                              | Yes                            |
-| LocalOutlierFactor             | neighbors             |                                  |                                |
-| LogisticRegression             | linear_model          |                                  | Yes                            |
-| LogisticRegressionCV           | linear_model          |                                  | Yes                            |
-| MLPClassifier                  | neural_network        |                                  | Yes                            |
-| MLPRegressor                   | neural_network        |                                  | Yes                            |
-| MaxAbsScaler                   | preprocessing         |                                  | Yes                            |
-| MeanShift                      | cluster               |                                  |                                |
-| MinCovDet                      | covariance            |                                  |                                |
-| MinMaxScaler                   | preprocessing         |                                  | Yes                            |
-| MiniBatchDictionaryLearning    | decomposition         |                                  |                                |
-| MiniBatchKMeans                | cluster               |                                  | Yes                            |
-| MiniBatchSparsePCA             | decomposition         |                                  |                                |
-| MissingIndicator               | impute                |                                  |                                |
-| MultiLabelBinarizer            | preprocessing         |                                  |                                |
-| MultiOutputClassifier          | multioutput           |                                  |                                |
-| MultiOutputRegressor           | multioutput           |                                  |                                |
-| MultiTaskElasticNet            | linear_model          |                                  | Yes                            |
-| MultiTaskElasticNetCV          | linear_model          |                                  | Yes                            |
-| MultiTaskLasso                 | linear_model          |                                  | Yes                            |
-| MultiTaskLassoCV               | linear_model          |                                  | Yes                            |
-| MultinomialNB                  | naive_bayes           |                                  | Yes                            |
-| NMF                            | decomposition         |                                  |                                |
-| NearestCentroid                | neighbors             |                                  |                                |
-| NearestNeighbors               | neighbors             |                                  | Yes                            |
-| NeighborhoodComponentsAnalysis | neighbors             |                                  |                                |
-| Normalizer                     | preprocessing         |                                  | Yes                            |
-| NuSVC                          | svm                   | Yes                              | Yes                            |
-| NuSVR                          | svm                   | Yes                              | Yes                            |
-| Nystroem                       | kernel_approximation  |                                  |                                |
-| OAS                            | covariance            |                                  |                                |
-| OPTICS                         | cluster               |                                  |                                |
-| OneClassSVM                    | svm                   |                                  | Yes                            |
-| OneHotEncoder                  | preprocessing         |                                  | Yes                            |
-| OneVsOneClassifier             | multiclass            |                                  |                                |
-| OneVsRestClassifier            | multiclass            |                                  | Yes                            |
-| OrdinalEncoder                 | preprocessing         |                                  | Yes                            |
-| OrthogonalMatchingPursuit      | linear_model          | Yes                              | Yes                            |
-| OrthogonalMatchingPursuitCV    | linear_model          | Yes                              | Yes                            |
-| OutputCodeClassifier           | multiclass            |                                  |                                |
-| PCA                            | decomposition         |                                  | Yes                            |
-| PLSCanonical                   | cross_decomposition   |                                  |                                |
-| PLSRegression                  | cross_decomposition   |                                  |                                |
-| PLSSVD                         | cross_decomposition   |                                  |                                |
-| PassiveAggressiveClassifier    | linear_model          | Yes                              | Yes                            |
-| PassiveAggressiveRegressor     | linear_model          | Yes                              | Yes                            |
-| Perceptron                     | linear_model          |                                  | Yes                            |
-| PolynomialFeatures             | preprocessing         |                                  | Yes                            |
-| PowerTransformer               | preprocessing         |                                  |                                |
-| QuadraticDiscriminantAnalysis  | discriminant_analysis |                                  |                                |
-| QuantileTransformer            | preprocessing         |                                  |                                |
-| RANSACRegressor                | linear_model          |                                  | Yes                            |
-| RBFSampler                     | kernel_approximation  |                                  |                                |
-| RFE                            | feature_selection     |                                  | Yes                            |
-| RFECV                          | feature_selection     |                                  | Yes                            |
-| RadiusNeighborsClassifier      | neighbors             |                                  |                                |
-| RadiusNeighborsRegressor       | neighbors             |                                  |                                |
-| RadiusNeighborsTransformer     | neighbors             |                                  |                                |
-| RandomForestClassifier         | ensemble              | Yes                              | Yes                            |
-| RandomForestRegressor          | ensemble              | Yes                              | Yes                            |
-| RandomTreesEmbedding           | ensemble              |                                  |                                |
-| RandomizedSearchCV             | model_selection       |                                  |                                |
-| RANSACRegressor                | linear_model          | Yes                              |                                |
-| RegressorChain                 | multioutput           |                                  |                                |
-| Ridge                          | linear_model          | Yes                              | Yes                            |
-| RidgeCV                        | linear_model          | Yes                              | Yes                            |
-| RidgeClassifier                | linear_model          |                                  | Yes                            |
-| RidgeClassifierCV              | linear_model          |                                  | Yes                            |
-| RobustScaler                   | preprocessing         |                                  | Yes                            |
-| SGDClassifier                  | linear_model          | Yes                              | Yes                            |
-| SGDRegressor                   | linear_model          | Yes                              | Yes                            |
-| SVC                            | svm                   | Yes                              | Yes                            |
-| SVR                            | svm                   | Yes                              | Yes                            |
-| SelectFdr                      | feature_selection     |                                  | Yes                            |
-| SelectFpr                      | feature_selection     |                                  | Yes                            |
-| SelectFromModel                | feature_selection     |                                  | Yes                            |
-| SelectFwe                      | feature_selection     |                                  | Yes                            |
-| SelectKBest                    | feature_selection     |                                  | Yes                            |
-| SelectPercentile               | feature_selection     |                                  | Yes                            |
-| ShrunkCovariance               | covariance            |                                  |                                |
-| SimpleImputer                  | impute                |                                  | Yes                            |
-| SkewedChi2Sampler              | kernel_approximation  |                                  |                                |
-| SparseCoder                    | decomposition         |                                  |                                |
-| SparsePCA                      | decomposition         |                                  |                                |
-| SparseRandomProjection         | random_projection     |                                  |                                |
-| SpectralBiclustering           | cluster               |                                  |                                |
-| SpectralClustering             | cluster               |                                  |                                |
-| SpectralCoclustering           | cluster               |                                  |                                |
-| StackingClassifier             | ensemble              |                                  |                                |
-| StackingRegressor              | ensemble              |                                  |                                |
-| StandardScaler                 | preprocessing         |                                  | Yes                            |
-| TheilSenRegressor              | linear_model          | Yes                              | Yes                            |
-| TransformedTargetRegressor     | compose               |                                  |                                |
-| TruncatedSVD                   | decomposition         |                                  | Yes                            |
-| VarianceThreshold              | feature_selection     |                                  | Yes                            |
-| VotingClassifier               | ensemble              |                                  | Yes                            |
-| VotingRegressor                | ensemble              |                                  | Yes                            |
-
-
-### XGBoost [[link](https://xgboost.readthedocs.io/en/latest/)]
-
-| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
-| :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
-| XGBClassifier                  | XGboost               | Yes                              |                                |
-| XGBRegressor                   | XGboost               | Yes                              |                                |
-| XGBRFClassifier                | XGboost               | Yes                              |                                |
-| XGBRFRegressor                 | XGboost               | Yes                              |                                |
-
-### LightGBM [[link](https://lightgbm.readthedocs.io/en/latest/)]
-
-| Name                           | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
-| :----------------------------- | :-------------------- | -------------------------------- | :----------------------------- |
-| LGBMClassifier                 | LightGBM              | Yes                              |                                |
-| LGBMRegressor                  | lightGBM              | Yes                              |                                |
-
-### lightning [[link](http://contrib.scikit-learn.org/lightning/)]
-
-| Name               | Package               | Direct transpile (at 21-03-2020) | ONNX transpile (sometime 2020) |
-| :------------------| :-------------------- | -------------------------------- | :----------------------------- |
-| AdaGradClassifier  | linear_model          | Yes                              |                                |
-| AdaGradRegressor   | ensemble              | Yes                              |                                |
-| CDClassifier       | ensemble              | Yes                              |                                |
-| CDRegressor        | kernel_approximation  | Yes                              |                                |
-| FistaClassifier    | cluster               | Yes                              |                                |
-| FistaRegressor     | cluster               | Yes                              |                                |
-| KernelSVC          | ensemble              | Yes                              |                                |
-| LinearSVC          | ensemble              | Yes                              |                                |
-| LinearSVR          | tree                  | Yes                              |                                |
-| SAGAClassifier     | ensemble              | Yes                              |                                |      
-| SAGARegressor      | mixture               | Yes                              |                                |      
-| SAGClassifier      | linear_model          | Yes                              |                                |      
-| SAGRegressor       | naive_bayes           | Yes                              |                                |      
-| SDCAClassifier     | neural_network        | Yes                              |                                |      
-| SDCARegressor      | preprocessing         | Yes                              |                                |      
-| SGDClassifier      | cluster               | Yes                              |                                |     
-
-
-
-## References:
-
-* We try to stick to [http://google.github.io/styleguide/pyguide.html](http://google.github.io/styleguide/pyguide.html).
-* Package structure: [https://packaging.python.org/tutorials/packaging-projects/](https://packaging.python.org/tutorials/packaging-projects/)
+For more information please contact us at [go@scailable.net](mailto:go@scailable.net).

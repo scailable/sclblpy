@@ -1,8 +1,6 @@
 # Tests for the utils. Note, these are just simple unit
 # tests, a more elaborate tests of all models is found in
 # test_all_models.py.
-from sklearn.utils.validation import check_is_fitted
-
 from sclblpy._utils import _model_supported, _model_is_fitted, _get_system_info, _predict
 from sclblpy.errors import ModelSupportError
 
@@ -12,6 +10,8 @@ from xgboost import XGBRegressor
 import numpy as np
 import statsmodels.api as sm
 
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
 
 def test_supported_model():
     """Check whether or not a model is supported."""
@@ -72,8 +72,6 @@ def test_model_is_fitted():
     assert _model_is_fitted(xgb) == True, "This one should be fitted"
 
 
-
-
 def test_predict():
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)
@@ -93,6 +91,11 @@ def test_get_system_info():
 
 # Run tests
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     print("Running tests of _utils.py")
     print("===============================")
 
