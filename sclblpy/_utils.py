@@ -4,14 +4,14 @@ import re
 import socket
 import sys
 import uuid
-
-from sclblpy.errors import ModelSupportError, GeneratePredictionError
-import sclblpy._globals as glob
 import inspect
 import json
+
 from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
 
+from sclblpy.errors import ModelSupportError, GeneratePredictionError
+import sclblpy._globals as glob
 
 def _check_model(obj) -> bool:
     """Checks whether a model can be uploaded to Scailable.

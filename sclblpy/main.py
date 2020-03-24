@@ -43,6 +43,7 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
     bundle = {}
     bundle['fitted_model'] = mod
 
+    bundle['example'] = {}
     if feature_vector.any():
         inputStr = '[[%s]]' % ', '.join([str(i) for i in feature_vector.tolist()])
         example = {'input': inputStr}
@@ -268,7 +269,7 @@ def stop_print():
 
 
 def start_print():
-    """Start printing user feedback"""
+    """(re)start printing user feedback"""
     print("Printing user feedback set to 'True'.")
     glob.SILENT = False
 
@@ -283,7 +284,8 @@ def list_models():
         _load_supported_models()
 
     if not glob.SILENT:
-        print(glob.SUPPORTED_MODELS)
+        print("Currently supported models:")
+        print(json.dumps(glob.SUPPORTED_MODELS, sort_keys=True, indent=4))
 
     return glob.SUPPORTED_MODELS
 
@@ -313,4 +315,4 @@ def _set_admin_URL(url: str):
 
 
 if __name__ == '__main__':
-    print("No command line options available.")
+    print("No command line options available for main.py.")
