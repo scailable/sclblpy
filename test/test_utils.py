@@ -50,8 +50,6 @@ def test_supported_model():
     assert _model_supported(xgb) == True, "This one should be ok"
 
 
-
-
 def test_model_is_fitted():
     """ Test model is fitted() function """
     clf = svm.SVC()

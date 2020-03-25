@@ -11,7 +11,7 @@ from sklearn import datasets
 
 # Script settings:
 RUN_TESTS = False  # Prevent unintended testing
-ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this testmau
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 
 def test_upload():
