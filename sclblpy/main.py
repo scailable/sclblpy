@@ -107,6 +107,7 @@ def upload(mod, docs=None, feature_vector=np.empty(0), _verbose=False, _keep=Fal
 
         # Setup the actual request
         data: dict = {
+            # email : bool.
             'package': glob.PKG_NAME,
             'toolchain': toolchain_name,
             'name': bundle['docs'].get('name', "No name found."),
