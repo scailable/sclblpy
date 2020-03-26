@@ -7,7 +7,7 @@ from sclblpy.errors import ModelBundleError
 import sclblpy._globals as glob
 
 
-def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
+def _gzip_save(object, filename: str=glob.GZIP_BUNDLE, _verbose=False):
     """Saves a compressed object to disk.
 
     Function is used to pickle and gzip an sclblpy model object as created
@@ -25,6 +25,7 @@ def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
 
     """
     try:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)  # create the folder if it does not exists.
         fp = gzip.open(filename, 'wb')
         pickle.dump(object, fp, protocol=4)  # protocol = 4 is python 3.4 or higher
         fp.close()
@@ -38,7 +39,7 @@ def _gzip_save(object, filename: str=glob.BUNDLE_NAME, _verbose=False):
     return
 
 
-def _gzip_load(filename: str=glob.BUNDLE_NAME, _verbose=True):
+def _gzip_load(filename: str=glob.GZIP_BUNDLE, _verbose=True):
     """Loads a compressed object from disk.
 
     Currently not used in the sclblpy package but syntax should be used on the toolchain side.
@@ -72,7 +73,7 @@ def _gzip_load(filename: str=glob.BUNDLE_NAME, _verbose=True):
     return obj
 
 
-def _gzip_delete(filename:str =glob.BUNDLE_NAME, _verbose=False):
+def _gzip_delete(filename:str =glob.GZIP_BUNDLE, _verbose=False):
     """Deletes a file from user machine.
 
     Args:

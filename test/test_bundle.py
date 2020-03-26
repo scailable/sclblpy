@@ -2,7 +2,7 @@
 from sclblpy._bundle import _gzip_save, _gzip_load, _gzip_delete
 
 # Script settings:
-RUN_TESTS = False  # Prevent unintended testing
+RUN_TESTS = True  # Prevent unintended testing
 
 def test_gzip_save():
     """Test gzip save. """

@@ -43,7 +43,7 @@ def _check_model(obj) -> bool:
 def _model_supported(obj) -> bool:
     """Checks whether the supplied model is supported.
 
-    Checks whether a supplied model is present in the list of supported models (supported.json).
+    Checks whether a supplied model is present in the list of supported models (supported_models.json).
 
     Args:
         obj: The fitted model.
@@ -118,7 +118,7 @@ def _get_model_name(obj):
 def _load_supported_models():
     """Loads the supported model list.
 
-    Function opens and parses the file supported.json in the current
+    Function opens and parses the file supported_models.json in the current
     package folder to check the supported models.
 
     Note: the supported models are loaded into the glob.SUPPORTED_MODELS
@@ -132,7 +132,7 @@ def _load_supported_models():
         ModelSupportError.
     """
     try:
-        with open(glob.CURRENT_FOLDER + "/supported.json", "r") as f:
+        with open(glob.MODELS_JSON, "r") as f:
             glob.SUPPORTED_MODELS = json.load(f)
     except FileNotFoundError:
         raise ModelSupportError("Unable to find list of supported models.")

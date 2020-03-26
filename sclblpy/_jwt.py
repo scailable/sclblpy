@@ -130,7 +130,7 @@ def _get_user_details() -> dict:
 
     details: dict = {}
     try:
-        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "r") as f:
+        with open(glob.USER_CREDENTIALS, "r") as f:
             details = json.load(f)
             return details
     except FileNotFoundError:
@@ -152,7 +152,8 @@ def _get_user_details() -> dict:
         else:
             break
     if answ == 'y':
-        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "w+") as f:
+        os.makedirs(os.path.dirname(glob.USER_CREDENTIALS), exist_ok=True)  # create the folder if it does not exists.
+        with open(glob.USER_CREDENTIALS, "w+") as f:
             json.dump(details, f)
 
     return details
@@ -204,7 +205,7 @@ def _remove_credentials(_verbose=True):
         _verbose: Bool indicating whether feedback should be printed. Default True.
 
     """
-    path: str = glob.USER_CREDENTIALS_FOLDER + ".creds.json"
+    path: str = glob.USER_CREDENTIALS
     if os.path.exists(path):
         os.remove(path)
         if _verbose:
