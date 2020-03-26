@@ -7,7 +7,7 @@ from sclblpy.errors import ModelBundleError
 import sclblpy._globals as glob
 
 
-def _gzip_save(object, filename: str=glob.GZIP_BUNDLE, _verbose=False):
+def _gzip_save(object, filename: str=glob.GZIP_BUNDLE):
     """Saves a compressed object to disk.
 
     Function is used to pickle and gzip an sclblpy model object as created
@@ -16,11 +16,11 @@ def _gzip_save(object, filename: str=glob.GZIP_BUNDLE, _verbose=False):
     Args:
         object: A dictionary containing all the information to be send.
         filename: a string stating where to store the .zip file. Default glob.BUNDLE_NAME
-        _verbose: Bool indicating whether feedback should be printed. Default False.
 
     Returns:
+        True if the bundle is successfully saved.
 
-    Raises:
+    Raises (in debug mode):
           ModelBundleError if unable to store the model bundle.
 
     """
@@ -29,28 +29,30 @@ def _gzip_save(object, filename: str=glob.GZIP_BUNDLE, _verbose=False):
         fp = gzip.open(filename, 'wb')
         pickle.dump(object, fp, protocol=4)  # protocol = 4 is python 3.4 or higher
         fp.close()
-        if _verbose:
+        if glob.DEBUG:
             print("File successfully stored.")
     except Exception as e:
-        if _verbose:
+        if glob.DEBUG:
             print("Exception: " + str(e))
-        raise ModelBundleError("Unable to pickle and gzip your model.")
+            raise ModelBundleError("Unable to pickle and gzip your model.")
+        return False
 
-    return
+    return True
 
 
-def _gzip_load(filename: str=glob.GZIP_BUNDLE, _verbose=True):
+def _gzip_load(filename: str=glob.GZIP_BUNDLE):
     """Loads a compressed object from disk.
 
     Currently not used in the sclblpy package but syntax should be used on the toolchain side.
 
     Args:
         filename: Name of the gzipped pickle. Default "temp_sclbl_mod.gzip".
-        _verbose: Bool indicating whether feedback should be printed. Default True.
+
     Returns:
         obj: A dictonary containing the unpickled and unzipped contents of the file. Empty dict if unable to open.
+            False otherwise.
 
-    Raises:
+    Raises (in debug mode):
         ModelBundleError if fails.
 
     """
@@ -60,29 +62,31 @@ def _gzip_load(filename: str=glob.GZIP_BUNDLE, _verbose=True):
             fp = gzip.open(filename, 'rb')
             obj = pickle.load(fp)
             fp.close()
-            if _verbose:
+            if glob.DEBUG:
                 print("Model bundle successfully loaded.")
         else:
-            if _verbose:
+            if glob.DEBUG:
                 print("Model bundle not found.")
+            return False
     except Exception as e:
-        if _verbose:
+        if glob.DEBUG:
             print("Exception: " + str(e))
-        raise ModelBundleError("Unable to load model bundle.")
+            raise ModelBundleError("Unable to load model bundle.")
+        return False
 
     return obj
 
 
-def _gzip_delete(filename:str =glob.GZIP_BUNDLE, _verbose=False):
+def _gzip_delete(filename:str =glob.GZIP_BUNDLE):
     """Deletes a file from user machine.
 
     Args:
         filename: Str name of the file to delete, default: temp_sclbl_mod.gzip.
-        _verbose: Bool indicating whether feedback should be printed. Default False.
 
     Returns:
+        True if all is well, False otherwise
 
-    Raises:
+    Raises (in debug mode):
         ModelBundleError if fails.
 
     """
@@ -90,16 +94,19 @@ def _gzip_delete(filename:str =glob.GZIP_BUNDLE, _verbose=False):
     try:
         if os.path.exists(filename):
             os.remove(filename)
-            if _verbose:
+            if glob.DEBUG:
                 print("Deleted gzipped model bundle.")
         else:
-            if _verbose:
+            if glob.DEBUG:
                 print("File not found.")
+            return False
     except Exception as e:
-        print("Exception: " + str(e))
-        raise ModelBundleError("Unable to delete file.")
+        if glob.DEBUG:
+            print("Exception: " + str(e))
+            raise ModelBundleError("Unable to delete file.")
+        return False
 
-    return
+    return True
 
 
 if __name__ == '__main__':

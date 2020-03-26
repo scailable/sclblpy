@@ -34,16 +34,16 @@ clf = svm.SVC()
 X, y = datasets.load_iris(return_X_y=True)
 clf.fit(X, y)
 
-# Create documentation (optional):
+# Create an example feature vector:
+row = X[130, :]
+
+# Create documentation (optional, but useful):
 docs = {}
 docs['name'] = "My first fitted model"
 docs['documentation'] = "Any documentation you would like to provide."
 
-# Create an example feature vector (optional, but very useful):
-row = X[130, :]
-
 # Upload the model:
-sp.upload(clf, docs, feature_vector=row)
+sp.upload(clf, row, docs=docs)
 ````
 
 The call to `sp.upload()` will upload the fitted model, after running a number of local tests, to the 
@@ -82,29 +82,21 @@ sp.start_print()
 sp.remove_credentials()
 
 ````
-Note that many of the exposed functions have an optional argument `_verbose` which by default is `False`; setting
-it to `True` will provide additional error messaging which might be useful for debugging.
+Note that a number of the exposed functions have an optional argument `_verbose` which by default is `True`; this will
+ensure that, as long as printing is not fully suppressed by a call to `stop_print()`, meaningful user feedback is
+provided.
 
 ## Dependencies
 
 sclblpy needs python 3, and has been tested on python `> 3.7`. Furthermore, dependent on usage, sclblpy will import
 the following packages:
 
-* `json`
 * `numpy`
 * `requests`
-* `gzip`
-* `pickle`
-* `os`
-* `warnings`
-* `time`
-* `getpass`
-* `platform`
-* `re`
-* `socket`
-* `sys`
 * `uuid`
 * `sklearn`
+
+The `statsmodels` and `xgboost` packages are imported when used.
 
 ## Notes:
 

@@ -1,11 +1,14 @@
 import setuptools
 
+# get long description
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+exec(open('sclblpy/version.py').read())
+
 setuptools.setup(
     name="sclblpy",
-    version="0.0.8",
+    version=__version__,
     author="Maurits Kaptein",
     author_email="maurits.kaptein@scailable.net",
     description="Python package for uploading models to Scailable toolchain.",

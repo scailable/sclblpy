@@ -1,18 +1,18 @@
-import pickle
-import time
-
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, _set_admin_URL, \
-    list_models, start_print, stop_print
+    list_models, start_print, stop_print, _toggle_debug_mode
 
+import numpy as np
 from sklearn import svm
 from sklearn import datasets
 
 # Script settings:
-RUN_TESTS = True  # Prevent unintended testing
+RUN_TESTS = False  # Prevent unintended testing
+DEBUG_MODE = False  # Set debug to true; meaning print stack traces.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this testmau
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+
 
 def test_upload():
     """ Test the upload function"""
@@ -22,31 +22,31 @@ def test_upload():
     X, y = datasets.load_iris(return_X_y=True)
     clf.fit(X, y)
 
-    print("# 1: Simple upload, no docs etc.")
-    upload(clf, _verbose=True)
+    print("# 1: Simple upload, no docs etc; should fail:")
+    upload(clf, np.empty(0))
 
 
-    print("# 2: Docs, no example")
+    print("# 2: Docs, no example; should fail:")
     docs = {}
     docs['name'] = "Name of model"
     docs['documentation'] = "A long .md thing...."
-    upload(clf, docs)
+    upload(clf, np.empty(0), docs=docs)
 
     print("# 3: Example, no docs")
     row = X[130, :]
-    upload(clf, feature_vector=row, _verbose=True)
+    upload(clf, row)
 
     print("# 4: All args")
-    upload(clf, docs, feature_vector=row, _verbose=True)
+    upload(clf, row, docs=docs)
 
     # Test saving and loading:
     print("# 5: Test loading and retrieving:")
-    upload(clf, docs, feature_vector=row, _verbose=False, _keep=True)
+    upload(clf, row, docs=docs, _keep=True)
     obj = _gzip_load()
     _gzip_delete()
     mod = obj['fitted_model']
     pred = mod.predict(row.reshape(1, -1))
-    print("YAY: " + str(pred))
+    assert pred == [2], "Prediction is not correct."
 
 
 def test_remove_credentials():
@@ -68,7 +68,7 @@ def test_delete_endpoint():
         cfid = ep[0]['cfid']
     except Exception as e:
         # Effectively there was no endpoint...
-        print(e)
+        print("No endpoints to remove; test not run.")
 
     if cfid:
         delete_endpoint(cfid)
@@ -91,8 +91,6 @@ def test_user_utils():
 # Run tests
 if __name__ == '__main__':
 
-
-
     if not RUN_TESTS:
         print("Not running tests.")
         exit()
@@ -100,13 +98,16 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
+    if DEBUG_MODE:
+        _toggle_debug_mode()
 
     test_user_utils()
-    # stop_print()
     test_setting_URLs()
+
     test_upload()
     test_remove_credentials()
-    test_endpoints()
+
+    # test_endpoints()
     test_delete_endpoint()
 
     print("===============================")

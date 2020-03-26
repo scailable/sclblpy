@@ -9,6 +9,7 @@ from getpass import getpass, GetPassWarning
 import sclblpy._globals as glob
 from sclblpy.errors import LoginError, JWTError
 
+# Todo(McK) remove the verbose / improve error raising.
 
 def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
     """Checks whether a valid JWT string is present.
@@ -30,7 +31,7 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
         _verbose: Bool indicating whether feedback should be printed. Default True.
 
     Returns:
-        True if valid JWT string is present.
+        True if valid JWT string is present and valid. False otherwise.
 
     Raises:
         JWTError: if unable to obtain a valid JWT string.
@@ -195,24 +196,24 @@ def _refresh_jwt() -> bool:
         raise LoginError("Cannot connect to Scailable servers.")
 
 
-def _remove_credentials(_verbose=True):
+def _remove_credentials():
     """Removes stored user credentials.
 
     Assuming credentials are stored in .creds.json the function
     deletes the .creds.json file.
 
     Args:
-        _verbose: Bool indicating whether feedback should be printed. Default True.
+
+    Returns:
+        True if file found and deleted, false otherwise.
 
     """
     path: str = glob.USER_CREDENTIALS
     if os.path.exists(path):
         os.remove(path)
-        if _verbose:
-            print("Removed user credentials.")
+        return True
     else:
-        if _verbose:
-            print("No user credentials found.")
+        return False
 
 
 if __name__ == '__main__':

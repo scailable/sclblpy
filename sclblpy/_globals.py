@@ -8,6 +8,7 @@ TOOLCHAIN_URL: str = "https://toolchain.sclbl.net"  # Location of the toolchain 
 
 # control printing:
 SILENT: bool = False  # Suppress all printing.
+DEBUG: bool = False  # Raise errors + print trace
 
 # Storage locations:
 dirs = AppDirs("sclblpy", "sclbl")
