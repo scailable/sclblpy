@@ -3,10 +3,11 @@ from sclblpy._bundle import _gzip_save, _gzip_load, _gzip_delete
 import sclblpy._globals as glob
 
 # Script settings:
-from sclblpy.main import _toggle_debug_mode
+from sclblpy.main import _toggle_debug_mode, stop_print
 
 RUN_TESTS = True  # Prevent unintended testing
-DEBUG_MODE = True  # Set debug mode for testing.
+DEBUG = False  # Set to debug mode; if true it will raise exceptions
+PRINTING = False  # Toggle printing on and off.
 
 def test_gzip_save():
     """Test gzip save. """
@@ -35,11 +36,14 @@ if __name__ == '__main__':
         print("Not running tests.")
         exit()
 
+    if not PRINTING:
+        stop_print()
+
+    if DEBUG:
+        _toggle_debug_mode()
+
     print("Running tests of _bundle.py")
     print("===============================")
-
-    if DEBUG_MODE:
-        _toggle_debug_mode()
 
     test_gzip_save()  # save model testing
     test_gzip_load()  # load model + print contents

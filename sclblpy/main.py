@@ -6,8 +6,9 @@ import requests
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
-from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models
-from sclblpy.errors import UserManagerError, JWTError, UploadModelError
+from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models, \
+    _check_model
+from sclblpy.errors import UserManagerError, JWTError, UploadModelError, ModelSupportError
 from sclblpy.version import __version__
 
 
@@ -41,20 +42,27 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
         False if upload failed, true otherwise
 
     Raises  (in debug mode):
-        UploadModelError if unable to succesfully bundle and upload the model.
+        UploadModelError if unable to successfully bundle and upload the model.
     """
-    # Add model to bundle:
     bundle = {}
+
+    # Check model:
+    if not _check_model(mod):
+        if not glob.SILENT:
+            print("FATAL: The model you are trying to upload is not (yet) supported or has not been fitted. \n"
+                  "Please see README.md for a list of supported models. \n"
+                  "Your models has not been uploaded. \n")
+        if glob.DEBUG:
+            raise UploadModelError("The uploaded model is not supported.")
+        return False
     bundle['fitted_model'] = mod
 
     # check input vector and generate an example:
     bundle['example'] = {}
     if feature_vector.any():
-        input_str: str = '[[%s]]' % ', '.join([str(i) for i in feature_vector.tolist()])
-        example = {'input': input_str}
+        # try prediction
         try:
-            output = _predict(mod, feature_vector)
-            example["output"] = json.dumps(output)
+            output = _predict(mod, feature_vector)  # predict raises error if unable to generate predcition
         except Exception as e:
             if not glob.SILENT:
                 print("FATAL: We were unable to create an example inference. \n"
@@ -62,10 +70,14 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             if glob.DEBUG:
                 raise UploadModelError("Unable to generate prediction: " + str(e))
             return False
+
+        # format data:
+        input_str: str = '[[%s]]' % ', '.join([str(i) for i in feature_vector.tolist()])
+        example = {'input': input_str, "output": json.dumps(output)}
         bundle['example'] = example
     else:
         if not glob.SILENT:
-            print("FATAL: You did not provide an example instance. (see docs). \n"
+            print("FATAL: You did not provide a required example instance. (see docs). \n"
                   "Your model has not been uploaded. \n")
         return False
 
@@ -74,35 +86,39 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     if docs:
         bundle['docs'] = docs
     else:
-        bundle['docs']['name'] = _get_model_name(mod)
-        bundle['docs']['documentation'] = "None."
+        try:
+            name = _get_model_name(mod)
+        except Exception:
+            name = "NAMELESS"
+        bundle['docs']['name'] = name
+        bundle['docs']['documentation'] = "-- EMPTY --"
         if not glob.SILENT:
-            print("WARNING: You did not provide any documentation. We will simply use \n"
-                  "the name of your model as its title.")
-
-    # get system information
-    bundle['system_info'] = _get_system_info()
-
-    # gzip the bundle
-    try:
-        _gzip_save(bundle)
-    except Exception as e:
-        if not glob.SILENT:
-            print("FATAL: We were unable to gzip your model bundle. \n"
-                  "Your model has not been uploaded. \n")
-        if glob.DEBUG:
-            raise UploadModelError("We were unable to save the bundle: " + str(e))
-        return False
+            print("WARNING: You did not provide any documentation. \n"
+                  "We will simply use " + name + " as its name without further documentation.")
 
     # check authorization:
-    try:
-        auth = _check_jwt()
-    except Exception as e:
+    auth = _check_jwt()
+    if not auth:
         if not glob.SILENT:
             print("FATAL: We were unable to obtain JWT authorization for your account. \n"
                   "Your model has not been uploaded. \n")
         if glob.DEBUG:
-            raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
+            raise UploadModelError("We were unable to obtain JWT authorization.")
+        return False
+
+    # get system information
+    bundle['system_info'] = _get_system_info()
+
+    # add email also to bundle:
+    bundle['email'] = email
+
+    # gzip the bundle
+    if not _gzip_save(bundle):
+        if not glob.SILENT:
+            print("FATAL: We were unable to gzip your model bundle. \n"
+                  "Your model has not been uploaded. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to save the bundle.")
         return False
 
     # auth ok, upload:
@@ -139,7 +155,7 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             'Authorization': glob.JWT_TOKEN
         }
 
-        # Do the request
+        # Do the request (and make sure to delete the gzip if errors occur)
         try:
             response = requests.post(url, headers=headers, data=payload, files=files)
         except Exception as e:
@@ -197,8 +213,7 @@ def endpoints(_verbose=True) -> dict:
     of the endpoints by the current user.
 
     Args:
-        _verbose: Bool indicating whether the endpoints should be printed. Default True. If False a dict containing
-                    the endpoints is returned but nothing is printed.
+        _verbose: Bool indicating whether the endpoints should be printed. Default True.
 
     Returns:
          endpoints: a list containing all the endpoints by the current user. [{},{},{}]
@@ -246,14 +261,13 @@ def endpoints(_verbose=True) -> dict:
     return result
 
 
-def delete_endpoint(cfid: str, _verbose=True) -> bool:
+def delete_endpoint(cfid: str) -> bool:
     """Deletes an endpoint by cfid.
 
     Delete an endpoint owned by the currently logged in user by cfid.
 
     Args:
         cfid: String of the compute function id.
-        _verbose: Bool indicating whether feedback should be printed. Default True.
 
     Returns:
         True if successful
@@ -285,9 +299,18 @@ def delete_endpoint(cfid: str, _verbose=True) -> bool:
                   "Please try again later.")
         if glob.DEBUG:
             raise UserManagerError("Unable to delete endpoint. " + str(e))
+        return False
 
-    if _verbose and not glob.SILENT:
-        print(result['message'] +" \n")
+    if result.get("error") is not "":
+        if not glob.SILENT:
+            print("We were unable to remove this endpoint: \n"
+                  "Server error: " + str(result.get("error")))
+        if glob.DEBUG:
+            raise UserManagerError("Unable to delete endpoint. " + result.get("error"))
+        return False
+
+    if not glob.SILENT:
+        print("Endpoint with cfid " + cfid + " was successfully deleted.")
 
     return True
 
@@ -399,9 +422,10 @@ def _toggle_debug_mode() -> bool:
     Can be used for debugging purposes such that exceptions are raised (including the stack trace)
     instead of suppressed.
 
+    Note: the debug status is always printed when executing this method.
+
     Returns:
         Boolean indicating the status of the DEBUG global.
-
     """
     if glob.DEBUG:
         glob.DEBUG = False

@@ -30,14 +30,13 @@ def _gzip_save(object, filename: str=glob.GZIP_BUNDLE):
         pickle.dump(object, fp, protocol=4)  # protocol = 4 is python 3.4 or higher
         fp.close()
         if glob.DEBUG:
-            print("File successfully stored.")
+            print("Bundle message: File successfully stored.")
+        return True
     except Exception as e:
         if glob.DEBUG:
-            print("Exception: " + str(e))
-            raise ModelBundleError("Unable to pickle and gzip your model.")
+            print("Bundle exception: " + str(e))
+            raise ModelBundleError("Bundle error: Unable to pickle and gzip your model.")
         return False
-
-    return True
 
 
 def _gzip_load(filename: str=glob.GZIP_BUNDLE):
@@ -63,15 +62,15 @@ def _gzip_load(filename: str=glob.GZIP_BUNDLE):
             obj = pickle.load(fp)
             fp.close()
             if glob.DEBUG:
-                print("Model bundle successfully loaded.")
+                print("Bundle message: Model bundle successfully loaded.")
         else:
             if glob.DEBUG:
-                print("Model bundle not found.")
+                print("Bundle message: Model bundle not found.")
             return False
     except Exception as e:
         if glob.DEBUG:
-            print("Exception: " + str(e))
-            raise ModelBundleError("Unable to load model bundle.")
+            print("Bundle exception: " + str(e))
+            raise ModelBundleError("Bundle error: Unable to load model bundle.")
         return False
 
     return obj
@@ -95,15 +94,15 @@ def _gzip_delete(filename:str =glob.GZIP_BUNDLE):
         if os.path.exists(filename):
             os.remove(filename)
             if glob.DEBUG:
-                print("Deleted gzipped model bundle.")
+                print("Bundle message: Deleted gzipped model bundle.")
         else:
             if glob.DEBUG:
-                print("File not found.")
+                print("Bundle message: File not found.")
             return False
     except Exception as e:
         if glob.DEBUG:
-            print("Exception: " + str(e))
-            raise ModelBundleError("Unable to delete file.")
+            print("Bundle message: exception: " + str(e))
+            raise ModelBundleError("Bundle error: Unable to delete file.")
         return False
 
     return True

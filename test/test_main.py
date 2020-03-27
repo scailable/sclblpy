@@ -9,38 +9,33 @@ from sklearn import datasets
 
 # Script settings:
 RUN_TESTS = False  # Prevent unintended testing
-DEBUG_MODE = False  # Set debug to true; meaning print stack traces.
-ADMIN_URL = "http://localhost:8008"  # Location of admin for this testmau
+DEBUG = False  # Set to debug mode; if true it will raise exceptions
+PRINTING = True  # Toggle printing on and off.
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 
 
 def test_upload():
     """ Test the upload function"""
 
-    # Start fitting a simple model
+    # Start fitting a simple model, no feature vecto
     clf = svm.SVC()
     X, y = datasets.load_iris(return_X_y=True)
     clf.fit(X, y)
+    assert upload(clf, np.empty(0)) is False, "No valid feature vector."
 
-    print("# 1: Simple upload, no docs etc; should fail:")
-    upload(clf, np.empty(0))
-
-
-    print("# 2: Docs, no example; should fail:")
+    # Add docs
     docs = {}
     docs['name'] = "Name of model"
     docs['documentation'] = "A long .md thing...."
-    upload(clf, np.empty(0), docs=docs)
+    assert upload(clf, np.empty(0), docs=docs) is False, "No valid feature vector."
 
-    print("# 3: Example, no docs")
+    # Valid
     row = X[130, :]
     upload(clf, row)
-
-    print("# 4: All args")
-    upload(clf, row, docs=docs)
+    assert upload(clf, row, docs=docs) is True, "This should be valid."
 
     # Test saving and loading:
-    print("# 5: Test loading and retrieving:")
     upload(clf, row, docs=docs, _keep=True)
     obj = _gzip_load()
     _gzip_delete()
@@ -51,19 +46,20 @@ def test_upload():
 
 def test_remove_credentials():
     """ Test of get user details"""
-    _get_user_details()
-    remove_credentials(True)
+    assert type(_get_user_details()) is dict, "This should be a dict."
+    assert remove_credentials(True) is True, "This should return true if removed."
 
 
 def test_endpoints():
     """ Test endpoint() function """
-    endpoints()
+    assert isinstance(endpoints(), list) is True, "Endpoints should be a list"
 
 
 def test_delete_endpoint():
     """ Test deleting an endpoint """
     cfid = ""
     ep = endpoints()
+
     try:
         cfid = ep[0]['cfid']
     except Exception as e:
@@ -71,7 +67,7 @@ def test_delete_endpoint():
         print("No endpoints to remove; test not run.")
 
     if cfid:
-        delete_endpoint(cfid)
+        assert delete_endpoint(cfid) is True, "Should be able to delete an endpoint."
 
 
 def test_setting_URLs():
@@ -95,20 +91,23 @@ if __name__ == '__main__':
         print("Not running tests.")
         exit()
 
+    if not PRINTING:
+        stop_print()
+
+    if DEBUG:
+        _toggle_debug_mode()
+
     print("Running simple functional tests of main.py")
     print("===============================")
 
-    if DEBUG_MODE:
-        _toggle_debug_mode()
-
-    test_user_utils()
+    # test_user_utils()
     test_setting_URLs()
 
     test_upload()
     test_remove_credentials()
 
-    # test_endpoints()
-    test_delete_endpoint()
+    test_endpoints()
+    # test_delete_endpoint()  # Uncomment to test deleting the first user endpoint.
 
     print("===============================")
     print("All tests passed.")

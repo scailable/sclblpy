@@ -40,7 +40,7 @@
   ],
   "statsmodels" : [
     "OLS",
-    "GLW",
+    "GLS",
     "WLS"
   ],
   "xgboost" : [

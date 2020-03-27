@@ -54,6 +54,10 @@ This email also contains further details regarding the usage of your created end
 Note that upon first upload you will be prompted to provide your Scailable username and password; you can choose to
 store the provided credentials locally to enable easy login on subsequently uploads. (users can signup for an account at
  [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)).
+ 
+## Examples
+
+todo: Add Examples for each of the models:
 
 ## Additional functionality
 Next to the main ``upload()`` function, the package also exposes the following functions to administer endpoints:
