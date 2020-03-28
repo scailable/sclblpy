@@ -18,32 +18,27 @@ def _check_model(obj) -> bool:
     """Checks whether a model can be uploaded to Scailable.
 
     Checks whether the model is both supported (i.e., in the supported models list)
-    and fitted.
+    and fitted. Effectively a wrapper around _model_supported() and _model_is_fitted().
 
     Args:
         obj: a fitted model
 
     Returns:
         True if passes all checks
-
-    Raises:
-        ModelSupportError if not correct
     """
-    try:
-        _model_supported(obj)
-    except ModelSupportError as e:
-        raise ModelSupportError("Unable to check of model is supported. " + str(e))
-
-    if not _model_is_fitted(obj):
-        raise ModelSupportError("Model does not seem fitted yet. Run .fit() before submitting.")
-
-    return True
+    if _model_supported(obj):
+        if _model_is_fitted(obj):
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 def _model_supported(obj) -> bool:
     """Checks whether the supplied model is supported.
 
-    Checks whether a supplied model is present in the list of supported models (supported.json).
+    Checks whether a supplied model is present in the list of supported models (supported_models.json).
 
     Args:
         obj: The fitted model.
@@ -51,18 +46,29 @@ def _model_supported(obj) -> bool:
     Returns:
         True if it passes all checks.
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
-
     """
+    # Check if supported models are loaded:
     if not glob.SUPPORTED_MODELS:
-        _load_supported_models()
+        if not _load_supported_models():
+            if glob.DEBUG:
+                raise ModelSupportError("Model check error: unable to load supported models.")
+            return False
 
     try:
-        model_name: str = _get_model_name(obj)
-        model_base: str = _get_model_package(obj)
-    except:
-        raise ModelSupportError("Unable to retrieve model details")
+        model_base: str = _get_model_package(obj)  # This returns a string OR raises an error
+        # statsmodels hack for dealing with the RegressionResultsWrapper:
+        if model_base == "statsmodels":
+            model_name: str = _get_model_name(obj.model)
+        else:
+            model_name: str = _get_model_name(obj)
+    except Exception as e:
+        if not glob.SILENT:
+            print("Model check error: Unable to retrieve model and package name.")
+        if glob.DEBUG:
+            raise ModelSupportError("Model check error: Unable to retrieve model and package name: " + str(e))
+        return False
 
     if (model_base in glob.SUPPORTED_MODELS and
             model_name in glob.SUPPORTED_MODELS[model_base]):
@@ -71,7 +77,7 @@ def _model_supported(obj) -> bool:
         return False
 
 
-def _get_model_package(obj):
+def _get_model_package(obj) -> str:
     """Gets the package name of a model object.
 
     Args:
@@ -80,18 +86,19 @@ def _get_model_package(obj):
     Returns:
         base: string denoting the name of the package (e.g., sklearn)
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
     """
     mod = inspect.getmodule(obj)
     try:
         base, _sep, _stem = mod.__name__.partition('.')
     except Exception as e:
-        raise ModelSupportError("Unable to get package name")
+        raise ModelSupportError("Model check error: Unable to retrieve package name: " + str(e))
+
     return base
 
 
-def _get_model_name(obj):
+def _get_model_name(obj) -> str:
     """Get the name of a model.
 
     Function retrieves the name of a model from a fitted model
@@ -103,22 +110,22 @@ def _get_model_name(obj):
     Returns:
         name: String containing the name.
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
     """
 
     try:
         name = type(obj).__name__
     except Exception as e:
-        raise ModelSupportError("Unable to get model name")
+        raise ModelSupportError("Model check error: Unable to retrieve model name: " + str(e))
 
     return name
 
 
-def _load_supported_models():
+def _load_supported_models() -> bool:
     """Loads the supported model list.
 
-    Function opens and parses the file supported.json in the current
+    Function opens and parses the file supported_models.json in the current
     package folder to check the supported models.
 
     Note: the supported models are loaded into the glob.SUPPORTED_MODELS
@@ -127,18 +134,25 @@ def _load_supported_models():
     Args:
 
     Returns:
+        True if the supported models are loaded into the global SUPPORTED_MODELS, False otherwise.
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
     """
     try:
-        with open(glob.CURRENT_FOLDER + "/supported.json", "r") as f:
+        with open(glob.MODELS_JSON, "r") as f:
             glob.SUPPORTED_MODELS = json.load(f)
     except FileNotFoundError:
-        raise ModelSupportError("Unable to find list of supported models.")
+        if not glob.SILENT:
+            print("Model check error: Unable to find list of supported models.")
+        if glob.DEBUG:
+            raise ModelSupportError("Model check error: Unable to find list of supported models.")
+        return False
+
+    return True
 
 
-def _model_is_fitted(estimator):
+def _model_is_fitted(obj) -> bool:
     """Checks if a model is fitted.
 
     Function aims to see if a passed model object has been fitted already. If not
@@ -152,34 +166,29 @@ def _model_is_fitted(estimator):
 
     Raises:
     """
-    if hasattr(estimator, '_is_fitted'):
-        return estimator._is_fitted()
+    if hasattr(obj, '_is_fitted'):
+        return obj._is_fitted()
 
     # statsmodels:
-    # if hasattr(estimator, 'fittedvalues'):
-    #   return True
-    if hasattr(estimator, '_df_model'):
-        if estimator._df_model is None:
-            return False
-        else:
-            return True
+    if hasattr(obj, 'fittedvalues'):
+        return True
 
     # XGboost exception
-    if _get_model_package(estimator) == "xgboost":
+    if _get_model_package(obj) == "xgboost":
         try:
-            estimator.feature_importances_
+            obj.feature_importances_
             return True
         except Exception as e:  # general exception to not include xgboost
             return False
 
     try:
-        check_is_fitted(estimator)
+        check_is_fitted(obj)
         return True
     except NotFittedError:
         return False
 
 
-def _predict(mod, feature_vector, _verbose=False):
+def _predict(mod, feature_vector):
     """Generates predictions.
 
     Function to generate predictions and have the ability to
@@ -188,12 +197,11 @@ def _predict(mod, feature_vector, _verbose=False):
     Args:
         mod: A saved model instance
         feature_vector: A single row used for prediction (subset of dataset)
-        _verbose: Bool indicating whether feedback should be printed. Default False.
 
     Returns:
         A prediction (as list)
 
-    Raises:
+    Raises (in debug mode):
         GeneratePredictionError if unable to generate prediction.
     """
     package = _get_model_package(mod)
@@ -202,32 +210,23 @@ def _predict(mod, feature_vector, _verbose=False):
             result = mod.predict(feature_vector.reshape(1, -1))
             return result.tolist()
         except Exception as e:
-            if _verbose:
-                print("Unable to generate prediction sklearn: " + str(e))
-            raise GeneratePredictionError("Unable to generate sklearn prediction")
+            raise GeneratePredictionError("Model check error: Unable generate sklearn prediction: " + str(e))
+
     elif package == "statsmodels":
         try:
-            result = mod.fit().predict(feature_vector.reshape(1, -1))
+            result = mod.predict(feature_vector.reshape(1, -1))
             return result.tolist()
-            # result = mod.predict(feature_vector.reshape(1, -1))
-            # return result.tolist()
         except Exception as e:
-            if _verbose:
-                print("Unable to generate statstmodels prediction: " + str(e))
-            raise GeneratePredictionError("Unable to generate prediction")
+            raise GeneratePredictionError("Model check error: Unable generate statsmodels prediction: " + str(e))
+
     elif package == "xgboost":
         try:
             result = mod.predict(feature_vector.reshape(1, -1))
             return result.tolist()
         except Exception as e:
-            if _verbose:
-                print("Unable to generate prediction xgboost: " + str(e))
-            raise GeneratePredictionError("Unable to generate prediction")
-    else:
-        if _verbose:
-            print("We currently cannot provide predictions for the current model type.")
+            raise GeneratePredictionError("Model check error: Unable generate xgboost prediction: " + str(e))
 
-    raise GeneratePredictionError("Model type not found")
+    raise GeneratePredictionError("Model check error: Predictions for your model are not supported.")
 
 
 def _get_system_info(_verbose=False):

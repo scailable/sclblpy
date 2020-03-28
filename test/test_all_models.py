@@ -1,6 +1,5 @@
 # Testing the upload function for all supported models.
 # This might take a while..
-
 import time
 import statsmodels.api as sm
 
@@ -20,34 +19,39 @@ from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
 # Script settings:
+from sclblpy.main import _toggle_debug_mode, stop_print
+
 RUN_TESTS = False  # Prevent unintended testing
+DEBUG = False  # Set to debug mode; if true it will raise exceptions
+PRINTING = True  # Toggle printing on and off.
+TEAR_DOWN = False  # Remove all endpoints after running tests (you will be prompted)?
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
-PRINT_ALL = True  # Verbose output?
-TEAR_DOWN = True  # Remove all endpoints?
+SLEEPTIME = 2  # Time in between blocks of models.
+
 
 iris_data = datasets.load_iris(return_X_y=True)
 
+
 # StatsModels
-# https://www.statsmodels.org/stable/examples/index.html
 def test_sm_OLS():
     X, y = iris_data
-    estimator = sm.OLS(y, X)
-    mod = estimator.fit()
+    est = sm.OLS(y, X)
+    mod = est.fit()
     docs = {'name': "OLS test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs=docs)
     print("Tested SM, OLS...")
 
 
 def test_sm_GLS():
     data = sm.datasets.longley.load(as_pandas=False)
     X = sm.add_constant(data.exog)
-    estimator = sm.GLS(data.endog, X, sigma=1)
-    mod = estimator.fit()
+    est = sm.GLS(data.endog, X, sigma=1)
+    mod = est.fit()
     docs = {'name': "GLS test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested SM, GLS...")
 
 
@@ -55,11 +59,11 @@ def test_sm_WLS():
     Y = [1, 3, 4, 5, 2, 3, 4]
     X = range(1, 8)
     X = sm.add_constant(X)
-    estimator = sm.WLS(Y, X, weights=list(range(1, 8)))
-    mod = estimator.fit()
+    est = sm.WLS(Y, X, weights=list(range(1, 8)))
+    mod = est.fit()
     docs = {'name': "WLS test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested SM, WLS...")
 
 
@@ -70,7 +74,7 @@ def test_sk_ARDRegression():
     mod.fit(X, y)
     docs = {'name': "ARDRegression test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, ARDRegression...")
 
 
@@ -80,7 +84,7 @@ def test_sk_DecisionTreeClassifier():
     mod.fit(X, y)
     docs = {'name': "DecisionTreeClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, DecisionTreeClassifier...")
 
 
@@ -90,7 +94,7 @@ def test_sk_DecisionTreeRegressor():
     mod.fit(X, y)
     docs = {'name': "DecisionTreeClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, DecisionTreeRegressor...")
 
 
@@ -100,7 +104,7 @@ def test_sk_ElasticNet():
     mod.fit(X, y)
     docs = {'name': "ElasticNet test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, ElasticNet...")
 
 
@@ -110,7 +114,7 @@ def test_sk_ElasticNetCV():
     mod.fit(X, y)
     docs = {'name': "ElasticNetCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, ElasticNetCV...")
 
 
@@ -120,7 +124,7 @@ def test_sk_ExtraTreeClassifier():
     mod.fit(X, y)
     docs = {'name': "ExtraTreeClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, ExtraTreeClassifier...")
 
 
@@ -130,7 +134,7 @@ def test_sk_ExtraTreeRegressor():
     mod.fit(X, y)
     docs = {'name': "ExtraTreeRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, ExtraTreeRegressor...")
 
 
@@ -140,7 +144,7 @@ def test_sk_ExtraTreesClassifier():
     mod.fit(X, y)
     docs = {'name': "ExtraTreeClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, Ensemble ExtraTreeClassifier...")
 
 
@@ -150,7 +154,7 @@ def test_sk_ExtraTreesRegressor():
     mod.fit(X, y)
     docs = {'name': "ExtraTreeRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, Ensemble ExtraTreeRegressor...")
 
 
@@ -160,7 +164,7 @@ def test_sk_HuberRegressor():
     mod.fit(X, y)
     docs = {'name': "HuberRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, HuberRegressor...")
 
 
@@ -170,7 +174,7 @@ def test_sk_Lars():
     mod.fit(X, y)
     docs = {'name': "Lars test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, Lars...")
 
 
@@ -180,7 +184,7 @@ def test_sk_LarsCV():
     mod.fit(X, y)
     docs = {'name': "LarsCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LarsCV...")
 
 
@@ -190,7 +194,7 @@ def test_sk_Lasso():
     mod.fit(X, y)
     docs = {'name': "Lasso test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, Lasso...")
 
 
@@ -200,7 +204,7 @@ def test_sk_LassoCV():
     mod.fit(X, y)
     docs = {'name': "LassoCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LassoCV...")
 
 
@@ -210,7 +214,7 @@ def test_sk_LassoLars():
     mod.fit(X, y)
     docs = {'name': "LassoLars test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LassoLars...")
 
 
@@ -220,7 +224,7 @@ def test_sk_LassoLarsCV():
     mod.fit(X, y)
     docs = {'name': "LassoLarsCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LassoLarsCV...")
 
 
@@ -230,7 +234,7 @@ def test_sk_LassoLarsIC():
     mod.fit(X, y)
     docs = {'name': "LassoLarsIC test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LassoLarsIC...")
 
 
@@ -240,7 +244,7 @@ def test_sk_LinearRegression():
     mod.fit(X, y)
     docs = {'name': "LinearRegression test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LinearRegression...")
 
 
@@ -250,7 +254,7 @@ def test_sk_LinearSVC():
     mod.fit(X, y)
     docs = {'name': "LinearSVC test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LinearSVC...")
 
 
@@ -260,7 +264,7 @@ def test_sk_LinearSVR():
     mod.fit(X, y)
     docs = {'name': "LinearSVR test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, LinearSVR...")
 
 
@@ -270,7 +274,7 @@ def test_sk_NuSCV():
     mod.fit(X, y)
     docs = {'name': "NuSCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, NuSCV...")
 
 
@@ -280,7 +284,7 @@ def test_sk_NuSVR():
     mod.fit(X, y)
     docs = {'name': "NuSVR test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, NuSVR...")
 
 
@@ -290,7 +294,7 @@ def test_sk_OrthogonalMatchingPursuit():
     mod.fit(X, y)
     docs = {'name': "OrthogonalMatchingPursuit test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, OrthogonalMatchingPursuit...")
 
 
@@ -300,7 +304,7 @@ def test_sk_OrthogonalMatchingPursuitCV():
     mod.fit(X, y)
     docs = {'name': "OrthogonalMatchingPursuitCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, OrthogonalMatchingPursuitCV...")
 
 
@@ -310,7 +314,7 @@ def test_sk_PassiveAggressiveClassifier():
     mod.fit(X, y)
     docs = {'name': "PassiveAggressiveClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, PassiveAggressiveClassifier...")
 
 
@@ -320,7 +324,7 @@ def test_sk_PassiveAggressiveRegressor():
     mod.fit(X, y)
     docs = {'name': "PassiveAggressiveRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, PassiveAggressiveRegressor...")
 
 
@@ -330,7 +334,7 @@ def test_sk_RandomForestClassifier():
     mod.fit(X, y)
     docs = {'name': "RandomForestClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, RandomForestClassifier...")
 
 
@@ -340,7 +344,7 @@ def test_sk_RandomForestRegressor():
     mod.fit(X, y)
     docs = {'name': "RandomForestRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, RandomForestRegressor...")
 
 
@@ -350,7 +354,7 @@ def test_sk_RANSACRegressor():
     mod.fit(X, y)
     docs = {'name': "RANSACRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, RANSACRegressor...")
 
 
@@ -360,7 +364,7 @@ def test_sk_Ridge():
     mod.fit(X, y)
     docs = {'name': "Ridge test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, Ridge...")
 
 
@@ -370,7 +374,7 @@ def test_sk_RidgeCV():
     mod.fit(X, y)
     docs = {'name': "RidgeCV test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, RidgeCV...")
 
 
@@ -380,7 +384,7 @@ def test_sk_SGDClassifier():
     mod.fit(X, y)
     docs = {'name': "SGDClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, SGDClassifier...")
 
 
@@ -390,7 +394,7 @@ def test_sk_SGDRegressor():
     mod.fit(X, y)
     docs = {'name': "SGDRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, SGDRegressor...")
 
 
@@ -400,7 +404,7 @@ def test_sk_SVC():
     mod.fit(X, y)
     docs = {'name': "SVC test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, SVC...")
 
 
@@ -410,7 +414,7 @@ def test_sk_SVR():
     mod.fit(X, y)
     docs = {'name': "SVR test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, SVR...")
 
 
@@ -420,7 +424,7 @@ def test_sk_TheilSenRegressor():
     mod.fit(X, y)
     docs = {'name': "TheilSenRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested sklearn, TheilSenRegressor...")
 
 
@@ -431,7 +435,7 @@ def test_xg_XGBClassifier():
     mod.fit(X, y)
     docs = {'name': "XGBClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested xgboost, XGBClassifier...")
 
 
@@ -441,7 +445,7 @@ def test_xg_XGBRegressor():
     mod.fit(X, y)
     docs = {'name': "XGBRegressor test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested xgboost, XGBRegressor...")
 
 
@@ -451,7 +455,7 @@ def test_xg_XGBRFClassifier():
     mod.fit(X, y)
     docs = {'name': "XGBRFClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested xgboost, XGBRFClassifier...")
 
 
@@ -461,7 +465,7 @@ def test_xg_XGBRFRegressor():
     mod.fit(X, y)
     docs = {'name': "XGBRFXGBRFRegressorClassifier test"}
     fv = X[0, :]
-    upload(mod, docs, feature_vector=fv, _verbose=PRINT_ALL)
+    upload(mod, fv, docs)
     print("Tested xgboost, XGBRFRegressor...")
 
 
@@ -470,6 +474,15 @@ if __name__ == '__main__':
     if not RUN_TESTS:
         print("Not running tests.")
         exit()
+
+    if not PRINTING:
+        stop_print()
+
+    if DEBUG:
+        _toggle_debug_mode()
+
+    # Remove:
+    # remove_credentials()
 
     # Set correct endpoints
     _set_toolchain_URL(TOOLCHAIN_URL)
@@ -482,61 +495,61 @@ if __name__ == '__main__':
     test_sm_OLS()
     test_sm_GLS()
     test_sm_WLS()
-    #
-    time.sleep(1)
+
+    time.sleep(SLEEPTIME)
     print("# SciKit Learn:")
     test_sk_ARDRegression()
     test_sk_DecisionTreeClassifier()
     test_sk_DecisionTreeRegressor()
     test_sk_ElasticNet()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_ElasticNetCV()
     test_sk_ExtraTreeClassifier()
     test_sk_ExtraTreeRegressor()
     test_sk_ExtraTreesClassifier()
     test_sk_ExtraTreesRegressor()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_HuberRegressor()
     test_sk_Lars()
     test_sk_LarsCV()
     test_sk_Lasso()
     test_sk_LassoCV()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_LassoLars()
     test_sk_LassoLarsCV()
     test_sk_LassoLarsIC()
     test_sk_LinearRegression()
     test_sk_LinearSVC()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_LinearSVR()
     test_sk_NuSCV()
     test_sk_NuSVR()
     test_sk_OrthogonalMatchingPursuit()
     test_sk_OrthogonalMatchingPursuitCV()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_PassiveAggressiveClassifier()
     test_sk_PassiveAggressiveRegressor()
     test_sk_RandomForestClassifier()
     test_sk_RandomForestClassifier()
     test_sk_RANSACRegressor()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_Ridge()
     test_sk_RidgeCV()
     test_sk_SGDClassifier()
     test_sk_SGDRegressor()
     test_sk_SVC()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     test_sk_SVR()
     test_sk_TheilSenRegressor()
 
-    time.sleep(1)
+    time.sleep(SLEEPTIME)
     print("# XGBoost Learn:")
     test_xg_XGBRegressor()
     test_xg_XGBClassifier()
@@ -547,12 +560,22 @@ if __name__ == '__main__':
     print("All tests passed.")
 
     if TEAR_DOWN:
-        endpoints = endpoints()
-        # Loop with pause and remove...
-        for key in endpoints:
-            print('Delete: {}, cfid: {}.'.format(key['name'], key['cfid']))
-            delete_endpoint(key['cfid'])
-            time.sleep(.5)
+
+        while True:
+            query = input('Are you sure you would like to remove all endpoints? (y/n) ')
+            answ = query[0].lower()
+            if query == '' or not answ in ['y', 'n']:
+                print('Please answer with yes or no')
+            else:
+                break
+
+        if answ == 'y':
+            endpoints = endpoints()
+            # Loop with pause and remove...
+            for key in endpoints:
+                print('Delete: {}, cfid: {}.'.format(key['name'], key['cfid']))
+                delete_endpoint(key['cfid'])
+                time.sleep(.5)
 
     print("===============================")
     print("Done.")
