@@ -1,4 +1,4 @@
-# File contains all (private) method for jwt interaction.
+# File contains all (private) methods for jwt interaction.
 import os
 import warnings
 import requests as req
@@ -69,6 +69,7 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280) -> bool:
     if glob.JWT_TOKEN:
         return True
     else:
+        # Edge case; JWT token empty:
         return False
 
 
@@ -112,7 +113,7 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         result: dict = resp.json()
         if result.get("error") is not None:
             if _remove_file:
-                _remove_credentials()  # Removing user credentials if they are not right
+                _remove_credentials()  # Removing user credentials since they are not right
 
             if not glob.SILENT:
                 print("JWT error: the server generated an error: " + result.get("error"))
@@ -129,7 +130,7 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
 
     except req.exceptions.RequestException as a:
         if not glob.SILENT:
-            print("JWT error: Unalbe to connect to scailable servers.")
+            print("JWT error: Unable to connect to scailable servers.")
         if glob.DEBUG:
             raise LoginError("Unable to connect to Scailable servers.")
         return False
@@ -196,11 +197,10 @@ def _refresh_jwt() -> bool:
     Args:
 
     Returns:
-        True if refresh successful
+        True if refresh successful, False otherwise.
 
-    Raises:
+    Raises (in debug mode):
         JWTError if something is wrong with the JWT string.
-        LoginError if unable to connect to servers.
     """
     if glob.DEBUG:
         print("Refreshing JWT string.")
@@ -252,16 +252,27 @@ def _remove_credentials():
     Returns:
         True if file found and deleted, false otherwise.
     """
+    glob.JWT_TOKEN = ""  # Remove token.
+
+    # and remove file:
     path: str = glob.USER_CREDENTIALS
     if os.path.exists(path):
-        os.remove(path)
+        try:
+            os.remove(path)
+        except Exception as e:
+            if not glob.SILENT:
+                print("JWT delete error: Unable to remove your credentials.")
+            if glob.DEBUG:
+                raise JWTError("JWT delete error: Unable to remove credentials: " + str(e))
+            return False
         if not glob.SILENT:
             print("Your stored user credentials have been removed. \n"
                   "Please re-enter your username and password next time you try to upload a model.")
+
         return True
     else:
         return False
 
 
 if __name__ == '__main__':
-    print("No command line options yet for _jwt.py.")
+    print("No command line options for _jwt.py.")

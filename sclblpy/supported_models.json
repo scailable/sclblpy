@@ -36,7 +36,8 @@
     "SGDClassifier",
     "SGDRegressor",
     "SVC",
-    "SVR"
+    "SVR",
+    "TheilSenRegressor"
   ],
   "statsmodels" : [
     "OLS",

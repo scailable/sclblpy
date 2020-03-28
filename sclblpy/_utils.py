@@ -18,7 +18,7 @@ def _check_model(obj) -> bool:
     """Checks whether a model can be uploaded to Scailable.
 
     Checks whether the model is both supported (i.e., in the supported models list)
-    and fitted.
+    and fitted. Effectively a wrapper around _model_supported() and _model_is_fitted().
 
     Args:
         obj: a fitted model
@@ -48,7 +48,6 @@ def _model_supported(obj) -> bool:
 
     Raises (in debug mode):
         ModelSupportError.
-
     """
     # Check if supported models are loaded:
     if not glob.SUPPORTED_MODELS:
@@ -59,9 +58,9 @@ def _model_supported(obj) -> bool:
 
     try:
         model_base: str = _get_model_package(obj)  # This returns a string OR raises an error
-        # statsmodels hack:
+        # statsmodels hack for dealing with the RegressionResultsWrapper:
         if model_base == "statsmodels":
-            model_name: str = _get_model_name(obj.model)  # This returns a string OR raises an error
+            model_name: str = _get_model_name(obj.model)
         else:
             model_name: str = _get_model_name(obj)
     except Exception as e:
@@ -87,7 +86,7 @@ def _get_model_package(obj) -> str:
     Returns:
         base: string denoting the name of the package (e.g., sklearn)
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
     """
     mod = inspect.getmodule(obj)
@@ -111,7 +110,7 @@ def _get_model_name(obj) -> str:
     Returns:
         name: String containing the name.
 
-    Raises:
+    Raises (in debug mode):
         ModelSupportError.
     """
 
@@ -135,7 +134,7 @@ def _load_supported_models() -> bool:
     Args:
 
     Returns:
-        True is the supported models are loaded into the global SUPPORTED_MODELS
+        True if the supported models are loaded into the global SUPPORTED_MODELS, False otherwise.
 
     Raises (in debug mode):
         ModelSupportError.
@@ -153,7 +152,7 @@ def _load_supported_models() -> bool:
     return True
 
 
-def _model_is_fitted(estimator) -> bool:
+def _model_is_fitted(obj) -> bool:
     """Checks if a model is fitted.
 
     Function aims to see if a passed model object has been fitted already. If not
@@ -167,23 +166,23 @@ def _model_is_fitted(estimator) -> bool:
 
     Raises:
     """
-    if hasattr(estimator, '_is_fitted'):
-        return estimator._is_fitted()
+    if hasattr(obj, '_is_fitted'):
+        return obj._is_fitted()
 
     # statsmodels:
-    if hasattr(estimator, 'fittedvalues'):
+    if hasattr(obj, 'fittedvalues'):
         return True
 
     # XGboost exception
-    if _get_model_package(estimator) == "xgboost":
+    if _get_model_package(obj) == "xgboost":
         try:
-            estimator.feature_importances_
+            obj.feature_importances_
             return True
         except Exception as e:  # general exception to not include xgboost
             return False
 
     try:
-        check_is_fitted(estimator)
+        check_is_fitted(obj)
         return True
     except NotFittedError:
         return False

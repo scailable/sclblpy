@@ -1,4 +1,4 @@
-# _bundle.py contains private methods for gzip bundling of object
+# _bundle.py contains private methods for gzip bundling of the model object
 import gzip
 import pickle
 import os
@@ -15,10 +15,10 @@ def _gzip_save(object, filename: str=glob.GZIP_BUNDLE):
 
     Args:
         object: A dictionary containing all the information to be send.
-        filename: a string stating where to store the .zip file. Default glob.BUNDLE_NAME
+        filename: a string stating where to store the .zip file. Default glob.GZIP_BUNDLE
 
     Returns:
-        True if the bundle is successfully saved.
+        True if the bundle is successfully saved, False if not.
 
     Raises (in debug mode):
           ModelBundleError if unable to store the model bundle.
@@ -45,7 +45,7 @@ def _gzip_load(filename: str=glob.GZIP_BUNDLE):
     Currently not used in the sclblpy package but syntax should be used on the toolchain side.
 
     Args:
-        filename: Name of the gzipped pickle. Default "temp_sclbl_mod.gzip".
+        filename: Name of the gzipped pickle. Default glob.GZIP_BUNDLE.
 
     Returns:
         obj: A dictonary containing the unpickled and unzipped contents of the file. Empty dict if unable to open.
@@ -80,10 +80,10 @@ def _gzip_delete(filename:str =glob.GZIP_BUNDLE):
     """Deletes a file from user machine.
 
     Args:
-        filename: Str name of the file to delete, default: temp_sclbl_mod.gzip.
+        filename: Str name of the file to delete. Default: glob.GZIP_BUNDLE.
 
     Returns:
-        True if all is well, False otherwise
+        True if all is well, False otherwise.
 
     Raises (in debug mode):
         ModelBundleError if fails.
@@ -109,4 +109,4 @@ def _gzip_delete(filename:str =glob.GZIP_BUNDLE):
 
 
 if __name__ == '__main__':
-    print("No command line options yet for _bundle.py.")
+    print("No command line options for _bundle.py.")

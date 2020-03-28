@@ -13,7 +13,7 @@ import numpy as np
 import statsmodels.api as sm
 
 # Script settings:
-RUN_TESTS = True  # Prevent unintended testing
+RUN_TESTS = False  # Prevent unintended testing
 DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 

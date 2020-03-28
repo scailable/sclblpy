@@ -32,7 +32,6 @@ def test_upload():
 
     # Valid
     row = X[130, :]
-    upload(clf, row)
     assert upload(clf, row, docs=docs) is True, "This should be valid."
 
     # Test saving and loading:
@@ -100,7 +99,7 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
-    # test_user_utils()
+    test_user_utils()
     test_setting_URLs()
 
     test_upload()
@@ -108,6 +107,7 @@ if __name__ == '__main__':
 
     test_endpoints()
     # test_delete_endpoint()  # Uncomment to test deleting the first user endpoint.
+
 
     print("===============================")
     print("All tests passed.")

@@ -1,6 +1,5 @@
 # Testing the upload function for all supported models.
 # This might take a while..
-
 import time
 import statsmodels.api as sm
 
@@ -20,14 +19,15 @@ from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
 # Script settings:
-from sclblpy.main import _toggle_debug_mode, remove_credentials, stop_print
+from sclblpy.main import _toggle_debug_mode, stop_print
 
-RUN_TESTS = True  # Prevent unintended testing
-DEBUG = True  # Set to debug mode; if true it will raise exceptions
+RUN_TESTS = False  # Prevent unintended testing
+DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
-TEAR_DOWN = False  # Remove all endpoints?
+TEAR_DOWN = False  # Remove all endpoints after running tests (you will be prompted)?
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+SLEEPTIME = 2  # Time in between blocks of models.
 
 
 iris_data = datasets.load_iris(return_X_y=True)
@@ -491,70 +491,70 @@ if __name__ == '__main__':
     print("Running tests off all supported models. This might take some time")
     print("===============================")
 
-    # print("# Statsmodels:")
-    # test_sm_OLS()
-    # test_sm_GLS()
-    # test_sm_WLS()
-    # #
-    # time.sleep(1)
-    # print("# SciKit Learn:")
-    # test_sk_ARDRegression()
-    # test_sk_DecisionTreeClassifier()
-    # test_sk_DecisionTreeRegressor()
-    # test_sk_ElasticNet()
-    #
-    # time.sleep(1)
-    # test_sk_ElasticNetCV()
-    # test_sk_ExtraTreeClassifier()
-    # test_sk_ExtraTreeRegressor()
-    # test_sk_ExtraTreesClassifier()
-    # test_sk_ExtraTreesRegressor()
-    #
-    # time.sleep(1)
-    # test_sk_HuberRegressor()
-    # test_sk_Lars()
-    # test_sk_LarsCV()
-    # test_sk_Lasso()
-    # test_sk_LassoCV()
-    #
-    # time.sleep(1)
-    # test_sk_LassoLars()
-    # test_sk_LassoLarsCV()
-    # test_sk_LassoLarsIC()
-    # test_sk_LinearRegression()
-    # test_sk_LinearSVC()
-    #
-    # time.sleep(1)
-    # test_sk_LinearSVR()
-    # test_sk_NuSCV()
-    # test_sk_NuSVR()
-    # test_sk_OrthogonalMatchingPursuit()
-    # test_sk_OrthogonalMatchingPursuitCV()
-    #
-    # time.sleep(1)
-    # test_sk_PassiveAggressiveClassifier()
-    # test_sk_PassiveAggressiveRegressor()
-    # test_sk_RandomForestClassifier()
-    # test_sk_RandomForestClassifier()
-    # test_sk_RANSACRegressor()
-    #
-    # time.sleep(1)
-    # test_sk_Ridge()
-    # test_sk_RidgeCV()
-    # test_sk_SGDClassifier()
-    # test_sk_SGDRegressor()
-    # test_sk_SVC()
-    #
-    # time.sleep(1)
-    # test_sk_SVR()
-    # test_sk_TheilSenRegressor()
-    #
-    # time.sleep(1)
-    # print("# XGBoost Learn:")
-    # test_xg_XGBRegressor()
-    # test_xg_XGBClassifier()
-    # test_xg_XGBRFClassifier()
-    # test_xg_XGBRFRegressor()
+    print("# Statsmodels:")
+    test_sm_OLS()
+    test_sm_GLS()
+    test_sm_WLS()
+
+    time.sleep(SLEEPTIME)
+    print("# SciKit Learn:")
+    test_sk_ARDRegression()
+    test_sk_DecisionTreeClassifier()
+    test_sk_DecisionTreeRegressor()
+    test_sk_ElasticNet()
+
+    time.sleep(SLEEPTIME)
+    test_sk_ElasticNetCV()
+    test_sk_ExtraTreeClassifier()
+    test_sk_ExtraTreeRegressor()
+    test_sk_ExtraTreesClassifier()
+    test_sk_ExtraTreesRegressor()
+
+    time.sleep(SLEEPTIME)
+    test_sk_HuberRegressor()
+    test_sk_Lars()
+    test_sk_LarsCV()
+    test_sk_Lasso()
+    test_sk_LassoCV()
+
+    time.sleep(SLEEPTIME)
+    test_sk_LassoLars()
+    test_sk_LassoLarsCV()
+    test_sk_LassoLarsIC()
+    test_sk_LinearRegression()
+    test_sk_LinearSVC()
+
+    time.sleep(SLEEPTIME)
+    test_sk_LinearSVR()
+    test_sk_NuSCV()
+    test_sk_NuSVR()
+    test_sk_OrthogonalMatchingPursuit()
+    test_sk_OrthogonalMatchingPursuitCV()
+
+    time.sleep(SLEEPTIME)
+    test_sk_PassiveAggressiveClassifier()
+    test_sk_PassiveAggressiveRegressor()
+    test_sk_RandomForestClassifier()
+    test_sk_RandomForestClassifier()
+    test_sk_RANSACRegressor()
+
+    time.sleep(SLEEPTIME)
+    test_sk_Ridge()
+    test_sk_RidgeCV()
+    test_sk_SGDClassifier()
+    test_sk_SGDRegressor()
+    test_sk_SVC()
+
+    time.sleep(SLEEPTIME)
+    test_sk_SVR()
+    test_sk_TheilSenRegressor()
+
+    time.sleep(SLEEPTIME)
+    print("# XGBoost Learn:")
+    test_xg_XGBRegressor()
+    test_xg_XGBClassifier()
+    test_xg_XGBRFClassifier()
+    test_xg_XGBRFRegressor()
 
     print("===============================")
     print("All tests passed.")

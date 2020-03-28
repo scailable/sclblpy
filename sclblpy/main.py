@@ -13,14 +13,13 @@ from sclblpy.version import __version__
 
 
 def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
-    """Uploads a fitted sklearn model to Scailable.
+    """Uploads a fitted model to Scailable.
 
     The upload function is the main workhorse of the sclblpy package.
     The function first checks whether the supplied model is ok (part of the list and fitted).
 
     Next, it checks whether an example row is provided and if so it creates the example
-    input and output .json objects. If not, it prints a warning (note, using 'print()' rather
-    than warnings.warn as this ensures that the order is maintained).
+    input and output .json objects.
 
     Next, the docs are checked; if none are provided a warning is issued and a simple
     name is provided based on the model type.
@@ -29,6 +28,9 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     gzipped file that is stored on disc.
 
     Finally the whole package is uploaded to the toolchain.
+
+    Note: This method prints user-feedback by default. This feedback can be surrpressed by calling the
+        stop_print() method.
 
     Args:
         mod: The model to be uploaded.
@@ -70,7 +72,6 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             if glob.DEBUG:
                 raise UploadModelError("Unable to generate prediction: " + str(e))
             return False
-
         # format data:
         input_str: str = '[[%s]]' % ', '.join([str(i) for i in feature_vector.tolist()])
         example = {'input': input_str, "output": json.dumps(output)}
@@ -86,10 +87,10 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     if docs:
         bundle['docs'] = docs
     else:
-        try:
+        try:  # This should work, but catching the exception just in case:
             name = _get_model_name(mod)
         except Exception:
-            name = "NAMELESS"
+            name = "NAMELESS MODEL"
         bundle['docs']['name'] = name
         bundle['docs']['documentation'] = "-- EMPTY --"
         if not glob.SILENT:
@@ -109,9 +110,6 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     # get system information
     bundle['system_info'] = _get_system_info()
 
-    # add email also to bundle:
-    bundle['email'] = email
-
     # gzip the bundle
     if not _gzip_save(bundle):
         if not glob.SILENT:
@@ -121,7 +119,7 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             raise UploadModelError("We were unable to save the bundle.")
         return False
 
-    # auth ok, upload:
+    # all ok, upload:
     if auth:
 
         url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID
@@ -160,7 +158,7 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             response = requests.post(url, headers=headers, data=payload, files=files)
         except Exception as e:
             if not glob.SILENT:
-                print("FATAL: Unable to carry out the upload request. \n"
+                print("FATAL: Unable to carry out the upload request: the toolchain is not available. \n"
                       "Your model has not been uploaded. \n")
             if not _keep:
                 _gzip_delete()
@@ -195,15 +193,18 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
             print("The following content has been send to the toolchain server:")
             print(bundle)
 
-    # user feedback:
-    if not glob.SILENT:
-        print("Your model was successfully uploaded. \n")
+        # user feedback:
+        if not glob.SILENT:
+            print("Your model was successfully uploaded. \n")
 
-    # remove bundle:
-    if not _keep:
-        _gzip_delete()
+        # remove bundle:
+        if not _keep:
+            _gzip_delete()
 
-    return True
+        return True
+
+    else:
+        return False
 
 
 def endpoints(_verbose=True) -> dict:
@@ -270,7 +271,7 @@ def delete_endpoint(cfid: str) -> bool:
         cfid: String of the compute function id.
 
     Returns:
-        True if successful
+        True if successful, False otherwise.
 
     Raises  (in debug mode):
         JWTError if unable to obtain JWT authorization
@@ -329,7 +330,8 @@ def remove_credentials(_verbose=True) -> bool:
     """
 
     # actual function in _utils.py to prevent circular includes.
-    if _remove_credentials():
+    removed = _remove_credentials()
+    if removed:
         if _verbose and not glob.SILENT:
             print("Successfully removed your user credentials.")
         return True
@@ -339,7 +341,7 @@ def remove_credentials(_verbose=True) -> bool:
         return False
 
 
-def stop_print(_verbose=True) -> bool:
+def stop_print(_verbose=False) -> bool:
     """Stop ALL printing of user feedback from package.
 
     Args:
@@ -349,7 +351,7 @@ def stop_print(_verbose=True) -> bool:
         True
     """
     if _verbose:
-        print("Suppressing all prints of user feedback.")
+        print("Printing user feedback set to 'False'.")
     glob.SILENT = True
     return True
 
@@ -383,7 +385,10 @@ def list_models() -> dict:
 
 
 def _set_toolchain_URL(url: str) -> str:
-    """Change the location of the toolchain server
+    """Change the location of the toolchain server.
+
+    This function is internal and should not be used by average users of the package. However,
+    it is useful for trouble-shooting the package either locally or on development servers.
 
     Args:
         url: String specifying the location of the toolchain server.
@@ -401,6 +406,9 @@ def _set_toolchain_URL(url: str) -> str:
 
 def _set_admin_URL(url: str) -> str:
     """Change the location of the toolchain server
+
+    This function is internal and should not be used by average users of the package. However,
+    it is useful for trouble-shooting the package either locally or on development servers.
 
     Args:
         url: String specifying the location of the toolchain server

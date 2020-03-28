@@ -1,11 +1,10 @@
 # Simple unit tests for _bundly.py
 from sclblpy._bundle import _gzip_save, _gzip_load, _gzip_delete
-import sclblpy._globals as glob
 
 # Script settings:
 from sclblpy.main import _toggle_debug_mode, stop_print
 
-RUN_TESTS = True  # Prevent unintended testing
+RUN_TESTS = False  # Prevent unintended testing
 DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = False  # Toggle printing on and off.
 

@@ -7,14 +7,14 @@ USER_MANAGER_URL: str = "https://admin.sclbl.net"  # Location of the user manage
 TOOLCHAIN_URL: str = "https://toolchain.sclbl.net"  # Location of the toolchain server.
 
 # control printing:
-SILENT: bool = False  # Suppress all printing.
-DEBUG: bool = False  # Raise errors + print trace
+SILENT: bool = False  # Boolean indicating whether user feedback should be suppressed.
+DEBUG: bool = False  # Boolean indicating whether using the package in debug mode; if so, it will raise exceptions.
 
 # Storage locations:
 dirs = AppDirs("sclblpy", "sclbl")
-USER_CREDENTIALS: str = dirs.user_config_dir + "/.creds.json"  # User credentials
-GZIP_BUNDLE: str = dirs.user_data_dir + "/model_bundle.gzip"  # Model bundle
-MODELS_JSON: str = os.path.dirname(os.path.realpath(__file__)) + "/supported_models.json"  # Supported models
+USER_CREDENTIALS: str = dirs.user_config_dir + "/.creds.json"  # Location of json file to store user credentials
+GZIP_BUNDLE: str = dirs.user_data_dir + "/model_bundle.gzip"  # Location where a save model is (temporarily) stored
+MODELS_JSON: str = os.path.dirname(os.path.realpath(__file__)) + "/supported_models.json"  # Location of the json with supported models
 
 # JWT necessities:
 JWT_TOKEN: str = ""  # JWT token.
