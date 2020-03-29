@@ -1,4 +1,4 @@
-# File contains all (private) method for jwt interaction.
+# File contains all (private) methods for jwt interaction.
 import os
 import warnings
 import requests as req
@@ -10,7 +10,7 @@ import sclblpy._globals as glob
 from sclblpy.errors import LoginError, JWTError
 
 
-def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
+def _check_jwt(seconds_refresh=120, seconds_renew=280) -> bool:
     """Checks whether a valid JWT string is present.
 
     Checks whether a valid JWT string is present. If so,
@@ -27,12 +27,11 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
     Args:
         seconds_refresh: int, seconds before a refresh is attempted. Default 120.
         seconds_renew: int, seconds before a renew is attempted. Default 280.
-        _verbose: Bool indicating whether feedback should be printed. Default True.
 
     Returns:
-        True if valid JWT string is present.
+        True if valid JWT string is present and valid. False otherwise.
 
-    Raises:
+    Raises (in debug mode):
         JWTError: if unable to obtain a valid JWT string.
     """
     now: float = time.time()
@@ -42,19 +41,36 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280, _verbose=True) -> bool:
     if not glob.JWT_TOKEN or glob.JWT_TIMESTAMP < time_renew:
         user_details: dict = _get_user_details()
         try:
-            _sign_in(user_details['username'], user_details['password'])
+            if _sign_in(user_details['username'], user_details['password']):
+                return True
+            else:
+                return False
         except LoginError as e:
-            raise JWTError("Unable to obtain JWT TOKEN. " + str(e))
+            if not glob.SILENT:
+                print("JWT error: sign in failed:" + str(e))
+            if glob.DEBUG:
+                raise JWTError("Unable to obtain JWT TOKEN. " + str(e))
+            return False
 
     if glob.JWT_TIMESTAMP < time_refresh:
         try:
             if _refresh_jwt():
                 return True
+            else:
+                return False
         except JWTError as e:
-            raise JWTError("Unable to refresh JWT TOKEN. " + str(e))
+            if not glob.SILENT:
+                print("JWT error: refresh failed:" + str(e))
+            if glob.DEBUG:
+                raise JWTError("Unable to refresh JWT TOKEN. " + str(e))
+            return False
 
     # JWT token is present and no need to refresh yet:
-    return True
+    if glob.JWT_TOKEN:
+        return True
+    else:
+        # Edge case; JWT token empty:
+        return False
 
 
 def _sign_in(username: str, password: str, _remove_file=True) -> bool:
@@ -76,7 +92,11 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         LoginError: if unable to login.
     """
     if len(username) < 1 or len(password) < 1:
-        raise LoginError("No username or password provided.")
+        if not glob.SILENT:
+            print("JWT error: no username and password provided.")
+        if glob.DEBUG:
+            raise LoginError("No username or password provided.")
+        return False
 
     url: str = glob.USER_MANAGER_URL + "/user/signin/"
     data: dict = {
@@ -87,13 +107,21 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         'Content-Type': 'text/plain'
     }
 
+    # Try connecting to server:
     try:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
         result: dict = resp.json()
         if result.get("error") is not None:
             if _remove_file:
-                _remove_credentials(False)  # Removing user credentials if they are not right
-            raise LoginError(result.get("error"))
+                _remove_credentials()  # Removing user credentials since they are not right
+
+            if not glob.SILENT:
+                print("JWT error: the server generated an error: " + result.get("error"))
+            if glob.DEBUG:
+                raise LoginError(result.get("JWT server error: " + result.get("error")))
+            return False
+
+        # Here all is ok:
         if result.get("token") is not None:
             glob.JWT_TOKEN = result.get("token")
             glob.JWT_USER_ID = result.get("uuid")
@@ -101,7 +129,11 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
             return True
 
     except req.exceptions.RequestException as a:
-        raise LoginError("Cannot connect to Scailable servers.")
+        if not glob.SILENT:
+            print("JWT error: Unable to connect to scailable servers.")
+        if glob.DEBUG:
+            raise LoginError("Unable to connect to Scailable servers.")
+        return False
 
     return False
 
@@ -113,8 +145,7 @@ def _get_user_details() -> dict:
     a. Retrieve username and password from .creds.json file.
     b. Retrieve username and password by prompting the user.
 
-    If user responds 'y' to prompt to save the function will create
-    .creds.json and store the user credentials.
+    If user responds 'y' to prompt to save the function we will store the user credentials.
 
     Args:
 
@@ -123,14 +154,13 @@ def _get_user_details() -> dict:
             'username' String
             'password' String
 
-    Raises:
-
-
+    Raises (in debug mode):
+        LoginError
     """
 
     details: dict = {}
     try:
-        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "r") as f:
+        with open(glob.USER_CREDENTIALS, "r") as f:
             details = json.load(f)
             return details
     except FileNotFoundError:
@@ -146,13 +176,14 @@ def _get_user_details() -> dict:
 
     while True:
         query = input('Would you like us to store your user credentials (y/n)? ')
-        answ = query[0].lower()
-        if query == '' or not answ in ['y', 'n']:
+        answer = query[0].lower()
+        if query == '' or not answer in ['y', 'n']:
             print('Please answer with yes or no')
         else:
             break
-    if answ == 'y':
-        with open(glob.USER_CREDENTIALS_FOLDER + ".creds.json", "w+") as f:
+    if answer == 'y':
+        os.makedirs(os.path.dirname(glob.USER_CREDENTIALS), exist_ok=True)  # create the folder if it does not exists.
+        with open(glob.USER_CREDENTIALS, "w+") as f:
             json.dump(details, f)
 
     return details
@@ -166,14 +197,20 @@ def _refresh_jwt() -> bool:
     Args:
 
     Returns:
-        True if refresh successful
+        True if refresh successful, False otherwise.
 
-    Raises:
+    Raises (in debug mode):
         JWTError if something is wrong with the JWT string.
-        LoginError if unable to connect to servers.
     """
+    if glob.DEBUG:
+        print("Refreshing JWT string.")
+
     if not glob.JWT_TOKEN:
-        raise JWTError("No JWT token found")
+        if not glob.SILENT:
+            print("JWT error: token not found, unable to refresh.")
+        if glob.DEBUG:
+            raise JWTError("No JWT token found")
+        return False
 
     url: str = glob.USER_MANAGER_URL + "/user/refresh/"
     headers = {
@@ -184,35 +221,58 @@ def _refresh_jwt() -> bool:
         resp: req.models.Response = req.get(url=url, headers=headers)
         result: dict = resp.json()
         if result.get("error") is not None:
-            raise JWTError(result.get("error"))
+            if not glob.SILENT:
+                print("JWT refresh server error: " + str(result.get("error")))
+            if glob.DEBUG:
+                raise JWTError("JWT refresh server error: " + str(result.get("error")))
+            return False
+
         if result.get("token") is not None:
             glob.JWT_TOKEN = result.get("token")
             glob.JWT_TIMESTAMP = time.time()
             return True
 
     except req.exceptions.RequestException as a:
-        raise LoginError("Cannot connect to Scailable servers.")
+        if not glob.SILENT:
+            print("JWT refresh error: Unable to connect to Scailable servers.")
+        if glob.DEBUG:
+            raise JWTError("JWT refresh error: Unable to connect to Scailable servers.")
+
+    return False
 
 
-def _remove_credentials(_verbose=True):
+def _remove_credentials():
     """Removes stored user credentials.
 
     Assuming credentials are stored in .creds.json the function
     deletes the .creds.json file.
 
     Args:
-        _verbose: Bool indicating whether feedback should be printed. Default True.
 
+    Returns:
+        True if file found and deleted, false otherwise.
     """
-    path: str = glob.USER_CREDENTIALS_FOLDER + ".creds.json"
+    glob.JWT_TOKEN = ""  # Remove token.
+
+    # and remove file:
+    path: str = glob.USER_CREDENTIALS
     if os.path.exists(path):
-        os.remove(path)
-        if _verbose:
-            print("Removed user credentials.")
+        try:
+            os.remove(path)
+        except Exception as e:
+            if not glob.SILENT:
+                print("JWT delete error: Unable to remove your credentials.")
+            if glob.DEBUG:
+                raise JWTError("JWT delete error: Unable to remove credentials: " + str(e))
+            return False
+        if not glob.SILENT:
+            print("Your stored user credentials have been removed. \n"
+                  "Please re-enter your username and password next time you try to upload a model.")
+
+        return True
     else:
-        if _verbose:
-            print("No user credentials found.")
+        return False
 
 
 if __name__ == '__main__':
-    print("No command line options yet for _jwt.py.")
+    print("No command line options for _jwt.py.")

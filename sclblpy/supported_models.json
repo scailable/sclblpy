@@ -21,6 +21,7 @@
     "LinearRegression",
     "LinearSVC",
     "LinearSVR",
+    "LogisticRegression",
     "NuSVC",
     "NuSVR",
     "OrthogonalMatchingPursuit",
@@ -35,15 +36,15 @@
     "SGDClassifier",
     "SGDRegressor",
     "SVC",
-    "SVR"
+    "SVR",
+    "TheilSenRegressor"
   ],
   "statsmodels" : [
     "OLS",
-    "GLW",
+    "GLS",
     "WLS"
   ],
   "xgboost" : [
-    "XGBModel",
     "XGBClassifier",
     "XGBRegressor",
     "XGBRFClassifier",

@@ -31,5 +31,10 @@ class GeneratePredictionError(Exception):
     pass
 
 
+class UploadModelError(Exception):
+    """ Upload model error """
+    pass
+
+
 if __name__ == '__main__':
     print("No command line options available for errors.py")

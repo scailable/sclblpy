@@ -1,30 +1,38 @@
 import time
 
+from sclblpy import _set_toolchain_URL, _set_admin_URL, stop_print
 from sclblpy._jwt import _check_jwt, _sign_in, _remove_credentials, _get_user_details
-from sclblpy.errors import LoginError, JWTError
+from sclblpy.errors import JWTError
+from sclblpy.main import _toggle_debug_mode
+
+# Script settings:
+RUN_TESTS = False  # Prevent unintended testing
+DEBUG = False  # Set to debug mode; if true it will raise exceptions
+PRINTING = True  # Toggle printing on and off.
+ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+
+# For the tests to pass we need a valid username and password:
+USERNAME = "VALID_USERNAME"
+PASSWORD = "VALID_PASSWORD"
 
 
 def test_JWT():
     """ Test __check_jwt() function """
 
-    # Test with try:
-    try:
-        _check_jwt(seconds_refresh=2, seconds_renew=3)
-        print("Success!")
-    except JWTError as e:
-        print("JWT error: " + str(e))
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
 
     # Test over time:
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
     time.sleep(2)
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
     time.sleep(4)
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
     _remove_credentials()
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
     time.sleep(4)
-    _check_jwt(seconds_refresh=2, seconds_renew=3)
+    assert _check_jwt(seconds_refresh=2, seconds_renew=3) is True, "This should be true with the right credentials"
 
 
 def test_signin():
@@ -33,49 +41,50 @@ def test_signin():
     # Try empty
     username: str = ""
     password: str = ""
-    try:
-        _sign_in(username, password)
-    except LoginError as e:
-        print("Unable to login: " + str(e))
-        print("CORRECT!")
+    assert _sign_in(username, password) is False, "This should not log in"
 
     # Try invalid
-    username = "maurits@mauritskaptein.com"
-    password = "dsfasfdaf90234i143"
-    try:
-        _sign_in(username, password)
-    except LoginError as e:
-        print("Unable to login: " + str(e))
-        print("CORRECT!")
+    username = "blabla@blabla.com"
+    password = "not-a-valid-password"
+    assert _sign_in(username, password) is False, "This should not log in 2"
 
     # Try valid
-    username = "maurits@mauritskaptein.com"
-    password = "test"
-    try:
-        _sign_in(username, password)
-        print("login successful")
-        print("CORRECT!")
-    except LoginError as e:
-        print("Unable to login: " + str(e))
+    username = USERNAME
+    password = PASSWORD
+    assert _sign_in(username, password) is True, "This should sign in (if the username and pass indeed exist)."
 
 
 def test_get_user_details():
     """ Test of get user details"""
-    print(_get_user_details())
-    print(_remove_credentials())
-    print(_get_user_details())
+    assert type(_get_user_details()) is dict, "This should be a dict"
+    assert _remove_credentials() is True, "This should be True"
+    assert type(_get_user_details()) is dict, "This should be a dict"
 
 
 # Run tests
 if __name__ == '__main__':
+
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
+    if not PRINTING:
+        stop_print()
+
+    if DEBUG:
+        _toggle_debug_mode()
+
     print("Running tests of _jwt.py")
     print("These take a few seconds to simulate refreshing etc.")
     print("===============================")
 
+    # Set correct endpoints
+    _set_toolchain_URL(TOOLCHAIN_URL)
+    _set_admin_URL(ADMIN_URL)
+
     test_signin()
     test_get_user_details()
     test_JWT()
-    print("If no  errors / exceptions, all tests passed.")
 
     print("===============================")
     print("All tests passed.")
