@@ -140,3 +140,4 @@ dmypy.json
 # User credentials
 .creds.json
 temp.py
+example.py

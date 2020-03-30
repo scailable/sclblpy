@@ -302,7 +302,7 @@ def delete_endpoint(cfid: str) -> bool:
             raise UserManagerError("Unable to delete endpoint. " + str(e))
         return False
 
-    if result.get("error") is not "":
+    if result.get("error") != "":
         if not glob.SILENT:
             print("We were unable to remove this endpoint: \n"
                   "Server error: " + str(result.get("error")))
