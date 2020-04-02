@@ -1,6 +1,5 @@
 # File contains all public methods of the scblpy package
 import json
-import numpy as np
 import requests
 
 import sclblpy._globals as glob
@@ -8,7 +7,7 @@ from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
 from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models, \
     _check_model
-from sclblpy.errors import UserManagerError, JWTError, UploadModelError, ModelSupportError
+from sclblpy.errors import UserManagerError, JWTError, UploadModelError
 from sclblpy.version import __version__
 
 
