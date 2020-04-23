@@ -1,6 +1,6 @@
 import time
 
-from sclblpy import _set_toolchain_URL, _set_admin_URL, stop_print
+from sclblpy import _set_toolchain_URL, _set_usermanager_URL, stop_print
 from sclblpy._jwt import _check_jwt, _sign_in, _remove_credentials, _get_user_details
 from sclblpy.errors import JWTError
 from sclblpy.main import _toggle_debug_mode
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     # Set correct endpoints
     _set_toolchain_URL(TOOLCHAIN_URL)
-    _set_admin_URL(ADMIN_URL)
+    _set_usermanager_URL(ADMIN_URL)
 
     test_signin()
     test_get_user_details()

@@ -141,3 +141,6 @@ dmypy.json
 .creds.json
 temp.py
 example.py
+example2.py
+example3.py
+test_all_models.py

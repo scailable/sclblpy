@@ -110,7 +110,17 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
     # Try connecting to server:
     try:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
-        result: dict = resp.json()
+
+        # Check if content type is JSON and at least 10 bytes long
+        if 'json' in resp.headers.get('Content-Type') and len(resp.content) > 10:
+            result: dict = resp.json()
+        else:
+            if not glob.SILENT:
+                print("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            if glob.DEBUG:
+                raise LoginError("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            return False
+
         if result.get("error") is not None:
             if _remove_file:
                 _remove_credentials()  # Removing user credentials since they are not right
@@ -121,12 +131,19 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
                 raise LoginError(result.get("JWT server error: " + result.get("error")))
             return False
 
-        # Here all is ok:
-        if result.get("token") is not None:
+        # If a JSON contains a token and a uuid, all is ok:
+        if result.get("token") is not None and result.get("uuid") is not None:
             glob.JWT_TOKEN = result.get("token")
             glob.JWT_USER_ID = result.get("uuid")
             glob.JWT_TIMESTAMP = time.time()
             return True
+        else:
+            # Token or UUID missing
+            if not glob.SILENT:
+                print("Missing key in server JWT response.")
+            if glob.DEBUG:
+                raise LoginError("Missing key in server response, server at:", glob.USER_MANAGER_URL)
+            return False
 
     except req.exceptions.RequestException as a:
         if not glob.SILENT:
@@ -134,8 +151,6 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         if glob.DEBUG:
             raise LoginError("Unable to connect to Scailable servers.")
         return False
-
-    return False
 
 
 def _get_user_details() -> dict:

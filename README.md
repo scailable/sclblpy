@@ -176,7 +176,7 @@ The `statsmodels` and `xgboost` packages are imported when used.
 ## Notes:
 
 * We try to stick to the naming conventions in [http://google.github.io/styleguide/pyguide.html](http://google.github.io/styleguide/pyguide.html).
-* The methods `_set_toolchain_URL(string)` and `_set_admin_URL(string)` can be used to change the default location of
+* The methods `_set_toolchain_URL(string)` and `_set_usermanager_URL(string)` can be used to change the default location of
 the toolchain and user-management function. These are useful when running the Scailable stack locally. Also the method `_toggle_debug_mode()` can
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
 

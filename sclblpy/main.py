@@ -403,7 +403,7 @@ def _set_toolchain_URL(url: str) -> str:
     return glob.TOOLCHAIN_URL
 
 
-def _set_admin_URL(url: str) -> str:
+def _set_usermanager_URL(url: str) -> str:
     """Change the location of the toolchain server
 
     This function is internal and should not be used by average users of the package. However,

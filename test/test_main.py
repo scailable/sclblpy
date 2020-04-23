@@ -1,6 +1,6 @@
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
-from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, _set_admin_URL, \
+from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, _set_usermanager_URL, \
     list_models, start_print, stop_print, _toggle_debug_mode
 
 import numpy as np
@@ -72,7 +72,7 @@ def test_delete_endpoint():
 def test_setting_URLs():
     """ Test url setters: """
     _set_toolchain_URL(TOOLCHAIN_URL)
-    _set_admin_URL(ADMIN_URL)
+    _set_usermanager_URL(ADMIN_URL)
 
 
 def test_user_utils():
