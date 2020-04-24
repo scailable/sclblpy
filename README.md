@@ -1,6 +1,6 @@
 # sclblpy
 
-Now automatically publishes to PyPI on committing to master when the commit is tagged with "release".
+Now automatically publishes to PyPI on release.
 
 sclblpy is the core python package provided by Scailable to convert models fit in python to WebAssembly and
 open them up as a REST endpoint. 
