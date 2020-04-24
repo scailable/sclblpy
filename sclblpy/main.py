@@ -1,6 +1,5 @@
 # File contains all public methods of the scblpy package
 import json
-import numpy as np
 import requests
 
 import sclblpy._globals as glob
@@ -8,7 +7,7 @@ from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
 from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models, \
     _check_model
-from sclblpy.errors import UserManagerError, JWTError, UploadModelError, ModelSupportError
+from sclblpy.errors import UserManagerError, JWTError, UploadModelError
 from sclblpy.version import __version__
 
 
@@ -302,7 +301,7 @@ def delete_endpoint(cfid: str) -> bool:
             raise UserManagerError("Unable to delete endpoint. " + str(e))
         return False
 
-    if result.get("error") is not "":
+    if result.get("error") != "":
         if not glob.SILENT:
             print("We were unable to remove this endpoint: \n"
                   "Server error: " + str(result.get("error")))
@@ -404,7 +403,7 @@ def _set_toolchain_URL(url: str) -> str:
     return glob.TOOLCHAIN_URL
 
 
-def _set_admin_URL(url: str) -> str:
+def _set_usermanager_URL(url: str) -> str:
     """Change the location of the toolchain server
 
     This function is internal and should not be used by average users of the package. However,

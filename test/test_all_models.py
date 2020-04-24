@@ -14,7 +14,7 @@ from xgboost import XGBRegressor
 from xgboost import XGBRFClassifier
 from xgboost import XGBRFRegressor
 
-from sclblpy import upload, _set_toolchain_URL, _set_admin_URL
+from sclblpy import upload, _set_toolchain_URL, _set_usermanager_URL
 from sclblpy import endpoints
 from sclblpy import delete_endpoint
 
@@ -486,7 +486,7 @@ if __name__ == '__main__':
 
     # Set correct endpoints
     _set_toolchain_URL(TOOLCHAIN_URL)
-    _set_admin_URL(ADMIN_URL)
+    _set_usermanager_URL(ADMIN_URL)
 
     print("Running tests off all supported models. This might take some time")
     print("===============================")

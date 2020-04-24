@@ -3,8 +3,8 @@ import os
 from sclblpy.appdirs import AppDirs
 
 # servers:
-USER_MANAGER_URL: str = "https://admin.sclbl.net"  # Location of the user manager.
-TOOLCHAIN_URL: str = "https://toolchain.sclbl.net"  # Location of the toolchain server.
+USER_MANAGER_URL: str = "https://usermanager.sclbl.net:8008"  # Location of the user manager.
+TOOLCHAIN_URL: str = "https://toolchain.sclbl.net:8010"  # Location of the toolchain server.
 
 # control printing:
 SILENT: bool = False  # Boolean indicating whether user feedback should be suppressed.
