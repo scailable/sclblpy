@@ -112,8 +112,16 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         resp: req.models.Response = req.post(url=url, headers=headers, json=data)
 
         # Check if content type is JSON and at least 10 bytes long
-        if 'json' in resp.headers.get('Content-Type') and len(resp.content) > 10:
-            result: dict = resp.json()
+        if 'json' in resp.headers.get('Content-Type') and len(resp.content) > 10 and len(resp.content) < 400:
+            try:
+                # See if able to decode the JSON
+                result: dict = resp.json()
+            except ValueError:  # simplejson.decoder.JSONDecodeError
+                if not glob.SILENT:
+                    print("Unable to decode JSON error.")
+                if glob.DEBUG:
+                    raise LoginError(result.get("Unable to decode JSON error."))
+                return False
         else:
             if not glob.SILENT:
                 print("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
@@ -124,7 +132,6 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
         if result.get("error") is not None:
             if _remove_file:
                 _remove_credentials()  # Removing user credentials since they are not right
-
             if not glob.SILENT:
                 print("JWT error: the server generated an error: " + result.get("error"))
             if glob.DEBUG:
@@ -234,7 +241,23 @@ def _refresh_jwt() -> bool:
 
     try:
         resp: req.models.Response = req.get(url=url, headers=headers)
-        result: dict = resp.json()
+        if 'json' in resp.headers.get('Content-Type'):
+            try:
+                # See if able to decode the JSON
+                result: dict = resp.json()
+            except ValueError:  # simplejson.decoder.JSONDecodeError
+                if not glob.SILENT:
+                    print("Unable to decode JSON error.")
+                if glob.DEBUG:
+                    raise LoginError(result.get("Unable to decode JSON error."))
+                return False
+        else:
+            if not glob.SILENT:
+                print("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            if glob.DEBUG:
+                raise LoginError("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            return False
+
         if result.get("error") is not None:
             if not glob.SILENT:
                 print("JWT refresh server error: " + str(result.get("error")))
