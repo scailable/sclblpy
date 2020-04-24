@@ -292,7 +292,22 @@ def delete_endpoint(cfid: str) -> bool:
     }
     try:
         response = requests.request("DELETE", url, headers=headers, data={})
-        result = json.loads(response.text)
+        # Check if content type is JSON
+        if 'json' in response.headers.get('Content-Type'):
+            try:
+                result = json.loads(response.text)
+            except ValueError:  # simplejson.decoder.JSONDecodeError
+                if not glob.SILENT:
+                    print("Unable to decode JSON response from usermanager error.")
+                if glob.DEBUG:
+                    raise UserManagerError(result.get("Unable to decode JSON response from usermanager error."))
+                return False
+        else:
+            if not glob.SILENT:
+                print("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            if glob.DEBUG:
+                raise UserManagerError("Server at", glob.USER_MANAGER_URL, "did not return a valid JSON document.")
+            return False
     except Exception as e:
         if not glob.SILENT:
             print("We were unable to remove this endpoint from the server. \n"
