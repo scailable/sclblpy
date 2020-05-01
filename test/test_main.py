@@ -1,7 +1,8 @@
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
-from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, _set_usermanager_URL, \
-    list_models, start_print, stop_print, _toggle_debug_mode
+from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
+    _set_usermanager_URL, \
+    list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs
 
 import numpy as np
 from sklearn import svm
@@ -9,7 +10,7 @@ from sklearn import datasets
 
 # Script settings:
 RUN_TESTS = False  # Prevent unintended testing
-DEBUG = False  # Set to debug mode; if true it will raise exceptions
+DEBUG = True  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
@@ -41,6 +42,54 @@ def test_upload():
     mod = obj['fitted_model']
     pred = mod.predict(row.reshape(1, -1))
     assert pred == [2], "Prediction is not correct."
+
+
+def test_update():
+    """ Test the update function"""
+
+    # Start fitting a simple model, no feature vecto
+    clf = svm.SVC()
+    X, y = datasets.load_iris(return_X_y=True)
+    clf.fit(X, y)
+
+    # Add and feature vector
+    docs = {}
+    docs['name'] = "Name of model - UPDATED"
+    docs['documentation'] = "A long .md thing.... UPDATED"
+    row = X[130, :]
+
+    # Get an existing endpoint to update
+    try:
+        cfid = endpoints(False)[0]["cfid"]
+    except Exception as e:
+        print("No endpoint to overwrite found")
+        assert False == True, "no endpoint found for overwrite test"
+
+    # Overwrite without docs
+    update(clf, row, cfid, docs={})
+
+    # Overwrite with valid docs:
+    update(clf, row, cfid, docs=docs)
+
+
+def test_update_docs():
+    """ Test the update docs function """
+
+    # Get an existing endpoint to update
+    try:
+        cfid = endpoints(False)[0]["cfid"]
+    except Exception as e:
+        print("No endpoint to overwrite found")
+        assert False == True, "no endpoint found for overwrite test"
+
+    update_docs(cfid, {})
+
+    docs ={}
+    docs['name'] = "UPDATED NAME"
+    update_docs(cfid, docs)
+
+    docs['documentation'] = "UPDATED MARKDOWN"
+    update_docs(cfid, docs)
 
 
 def test_remove_credentials():
@@ -103,6 +152,11 @@ if __name__ == '__main__':
     test_setting_URLs()
 
     test_upload()
+
+    # todo(McK): test these once the toolchain PUT is in place.
+    test_update()
+    test_update_docs()
+
     test_remove_credentials()
 
     test_endpoints()

@@ -138,11 +138,20 @@ sp.upload(mod, fv, docs=docs)
 Next to the main ``upload()`` function, the package also exposes the following functions to administer endpoints:
 
 ````
-# List all endpoints owned by the current user
+# List all endpoints owned by the current user:
 sp.endpoints()
 
-# Remove an endpoint
+# Remove an endpoint:
 sp.delete_endpoint("cfid-cfid-cfid")
+
+# Update an existing endpoint:
+sp.update(mod, fv, cfid, docs)  # Where cfid is the compute function id
+
+# Update an existing ednpoint without updating the docs:
+sp.update(mod, fv, cfid) 
+
+# Update only the docs of an existing endpoint:
+sp.update_docs(cfid, docs)
 ````
 
 Additionally, the following methods are available:

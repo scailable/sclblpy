@@ -1,5 +1,6 @@
 {
   "sklearn" : [
+    "AdaGradClassifier",
     "ARDRegression",
     "BayesianRidge",
     "DecisionTreeClassifier",
@@ -22,16 +23,20 @@
     "LinearSVC",
     "LinearSVR",
     "LogisticRegression",
+    "LogisticRegressionCV",
     "NuSVC",
     "NuSVR",
     "OrthogonalMatchingPursuit",
     "OrthogonalMatchingPursuitCV",
     "PassiveAggressiveClassifier",
     "PassiveAggressiveRegressor",
+    "Perceptron",
     "RandomForestClassifier",
     "RandomForestRegressor",
     "RANSACRegressor",
     "Ridge",
+    "RidgeClassifier",
+    "RidgeClassifierCV",
     "RidgeCV",
     "SGDClassifier",
     "SGDRegressor",
@@ -40,8 +45,11 @@
     "TheilSenRegressor"
   ],
   "statsmodels" : [
-    "OLS",
     "GLS",
+    "GLSAR",
+    "OLS",
+    "ProcessMLE",
+    "QuantReg",
     "WLS"
   ],
   "xgboost" : [
@@ -49,5 +57,9 @@
     "XGBRegressor",
     "XGBRFClassifier",
     "XGBRFRegressor"
+  ],
+  "lightgbm" : [
+    "LGBMClassifier",
+    "LGBMRegressor"
   ]
 }
