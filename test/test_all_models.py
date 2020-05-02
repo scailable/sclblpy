@@ -826,6 +826,7 @@ if __name__ == '__main__':
     if False:  # Lightning not supported.
         time.sleep(SLEEPTIME)
 
+        # Add to supported_models.json
         # "lightning": [
         #     "AdaGradClassifier",
         #     "AdaGradRegressor",

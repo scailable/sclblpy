@@ -1,8 +1,9 @@
+import time
+
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
-    _set_usermanager_URL, \
-    list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs
+    _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs
 
 import numpy as np
 from sklearn import svm
@@ -64,6 +65,8 @@ def test_update():
     except Exception as e:
         print("No endpoint to overwrite found")
         assert False == True, "no endpoint found for overwrite test"
+
+    print("Updating: " + cfid)
 
     # Overwrite without docs
     update(clf, row, cfid, docs={})
@@ -153,15 +156,19 @@ if __name__ == '__main__':
 
     test_upload()
 
-    # todo(McK): test these once the toolchain PUT is in place.
+    print("Wait, toolchain needs to finish....")
+    time.sleep(10)
+
     test_update()
+
+    print("Wait, update needs to finish....")
+    time.sleep(10)
     test_update_docs()
 
     test_remove_credentials()
 
     test_endpoints()
     # test_delete_endpoint()  # Uncomment to test deleting the first user endpoint.
-
 
     print("===============================")
     print("All tests passed.")

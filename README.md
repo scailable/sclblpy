@@ -142,7 +142,7 @@ Next to the main ``upload()`` function, the package also exposes the following f
 sp.endpoints()
 
 # Remove an endpoint:
-sp.delete_endpoint("cfid-cfid-cfid")
+sp.delete_endpoint(cfid)  # Where cfid is the compute function id
 
 # Update an existing endpoint:
 sp.update(mod, fv, cfid, docs)  # Where cfid is the compute function id

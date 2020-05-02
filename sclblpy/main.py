@@ -386,7 +386,7 @@ def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
 
         # user feedback:
         if not glob.SILENT:
-            print("Your model was successfully updated. \n")
+            print("Your model was successfully submitted for an update. \n")
 
         # remove bundle:
         if not _keep:
