@@ -171,6 +171,68 @@ sp.remove_credentials()
 
 ````
 
+## Supported models
+
+
+
+The list of models supported by the current version of the `sclblpy` package can always be retrieved 
+using the `list_models()` function. Here we provide an overview:
+
+Package | Model | Tested (05052020) | Note 
+--- | --- | --- | --- 
+lightgbm | LGBMClassifier | ok |  
+lightgbm | LGBMRegressor | ok |  
+sklearn | ARDRegression | ok |  
+sklearn | BayesianRidge | ok |  
+sklearn | DecisionTreeClassifier | ok |  
+sklearn | DecisionTreeRegressor | ok |  
+sklearn | ElasticNet | ok |  
+sklearn | ElasticNetCV | ok |  
+sklearn | ExtraTreeClassifier | ok |  
+sklearn | ExtraTreeRegresso | ok |  
+sklearn | ExtraTreesClassifier | ok |  
+sklearn | ExtraTreesRegressor | ok |  
+sklearn | HuberRegressor | ok |  
+sklearn | Lars | ok |  
+sklearn | LarsCV | ok |  
+sklearn | Lasso | ok |  
+sklearn | LassoCV | ok |  
+sklearn | LassoLars | ok |  
+sklearn | LassoLarsCV | ok |  
+sklearn | LassoLarsIC | ok |  
+sklearn | LinearRegression | ok |  
+sklearn | LinearSVC | ok |  
+sklearn | LinearSVR | ok |  
+sklearn | LogisticRegression | ok |  
+sklearn | LogisticRegressionCV | ok |  
+sklearn | NuSVC | ok |  
+sklearn | NuSVR | ok |  
+sklearn | OrthogonalMatchingPursuit | ok |  
+sklearn | OrthogonalMatchingPursuitCV | ok |  
+sklearn | PassiveAggressiveClassifier | ok |  
+sklearn | PassiveAggressiveRegressor | ok |  
+sklearn | Perceptron | ok |  
+sklearn | RandomForestClassifier | ok |  
+sklearn | RandomForestRegressor | ok |  
+sklearn | RANSACRegressor | ok |  
+sklearn | Ridge | ok |  
+sklearn | RidgeClassifier | ok |  
+sklearn | RidgeClassifierCV | ok |  
+sklearn | RidgeCV | ok |  
+sklearn | SGDClassifier | ok |  
+sklearn | SGDRegressor | ok |  
+sklearn | SVC | ok |  
+sklearn | SVR | ok |  
+sklearn | TheilSenRegressor | ok |  
+statsmodels | Generalized Least Squares (GLS) | ok |  
+statsmodels | Generalized Least Squares with AR Errors (GLSAR) | ok |  
+statsmodels | Ordinary Least Squares (OLS) | ok |  
+statsmodels | Quantile Regression (QuantReg) | ok |  
+statsmodels | Weighted Least Squares (WLS) | ok |  
+xgboost | XGBClassifier | ok |  
+xgboost | XGBRegressor | ok |  
+xgboost | XGBRFClassifier | ok | Binary only
+xgboost | XGBRFRegressor | ok |  
 
 ## Dependencies
 
@@ -190,5 +252,6 @@ The `statsmodels` and `xgboost` packages are imported when used.
 * The methods `_set_toolchain_URL(string)` and `_set_usermanager_URL(string)` can be used to change the default location of
 the toolchain and user-management function. These are useful when running the Scailable stack locally. Also the method `_toggle_debug_mode()` can
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
+* Docs generated using `pdoc --html --html-dir docs sclblpy/main.py`
 
 For more information please contact us at [go@scailable.net](mailto:go@scailable.net).
