@@ -6,7 +6,7 @@ from sclblpy.errors import JWTError
 from sclblpy.main import _toggle_debug_mode
 
 # Script settings:
-RUN_TESTS = True  # Prevent unintended testing
+RUN_TESTS = False  # Prevent unintended testing
 DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test

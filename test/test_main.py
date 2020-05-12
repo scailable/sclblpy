@@ -102,13 +102,11 @@ def test_update_docs():
 def test_run():
     """ Test running an endpoint
 
-    Note: Only works with valid cfid and valid fv.
+    Note: Only works with valid existing cfid and compatible fv.
     """
-    # cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo
-    _set_taskmanager_URL(TASKMANAGER_URL)
-    cfid = "94c56078-8f9c-11ea-b5eb-a4d18cd729d6"
+    cfid = "78c48c52-944f-11ea-ade6-a4d18cd729d6"
 
-    fv = [1, 2, 3, 4, 5]
+    fv = [7.4, 2.8, 6.1, 1.9]
 
     result = run(cfid, fv)
 
@@ -163,16 +161,14 @@ def test_user_utils():
 # Run tests
 if __name__ == '__main__':
 
+    if not RUN_TESTS:
+        print("Not running tests.")
+        exit()
+
     test_setting_URLs()
     print(glob.USER_MANAGER_URL)
     print(glob.TOOLCHAIN_URL)
     print(glob.TASK_MANAGER_URL)
-
-    test_run()
-
-    if not RUN_TESTS:
-        print("Not running tests.")
-        exit()
 
     if not PRINTING:
         stop_print()
@@ -185,6 +181,7 @@ if __name__ == '__main__':
 
     test_user_utils()
 
+    test_remove_credentials()
 
     test_upload()
 
@@ -201,6 +198,8 @@ if __name__ == '__main__':
 
     test_endpoints()
     # test_delete_endpoint()  # Uncomment to test deleting the first user endpoint.
+
+    test_run()
 
     print("===============================")
     print("All tests passed.")

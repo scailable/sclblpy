@@ -184,7 +184,7 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
 
         if response_data['error']:
             if not glob.SILENT:
-                print("FATAL: An error was returned by the server. \n"
+                print("FATAL: An error was returned by the toolchain-server. \n"
                       "Your model has not been uploaded. \n")
             if not _keep:
                 _gzip_delete()
@@ -527,7 +527,7 @@ def run(cfid, feature_vector) -> dict:
     #   {\"content-type\":\"json\",
     #   \"location\":\"embedded\",
     #   \"data\":\"{
-    #       \\\"input\\\": [" + data + "]}\"},
+    #       \\\"input\\\": [[" + data + "]]}\"},
     #   \"output\":{
     #       \"content-type\":\"json\",
     #       \"location\":\"echo\"},
@@ -573,10 +573,7 @@ def run(cfid, feature_vector) -> dict:
 
     # Do the actual call:
     try:
-        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":\"{\\\"input\\\": [" + \
-                  data + \
-                  "]}\"},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"},\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
-
+        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":\"{\\\"input\\\": [[" + data + "]]}\"},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"},\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }

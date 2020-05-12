@@ -182,9 +182,11 @@ add the following to your code:
 ````python
 from sclblpy import run
 
-cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo
+cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo.
 fv = [1,2,3,4,5]
-run(cfid, fv)
+result = run(cfid, fv)
+
+print(result) # Prints the full result from the Scailable server.
 ````
 
 
