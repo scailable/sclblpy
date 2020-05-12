@@ -13,8 +13,8 @@ ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 
 # For the tests to pass we need a valid username and password:
-USERNAME = "VALID_USERNAME"
-PASSWORD = "VALID_PASSWORD"
+USERNAME = "maurits@mauritskaptein.com"
+PASSWORD = "test"
 
 
 def test_JWT():

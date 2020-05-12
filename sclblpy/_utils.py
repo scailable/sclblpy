@@ -181,6 +181,14 @@ def _model_is_fitted(obj) -> bool:
         except Exception as e:  # general exception to not include xgboost
             return False
 
+    # lightgbm exceptoin
+    if _get_model_package(obj) == "lightgbm":
+        try:
+            obj.n_features_
+            return True
+        except Exception as e:  # of not possible, not fitted
+            return False
+
     try:
         check_is_fitted(obj)
         return True
@@ -220,6 +228,13 @@ def _predict(mod, feature_vector):
             raise GeneratePredictionError("Model check error: Unable generate statsmodels prediction: " + str(e))
 
     elif package == "xgboost":
+        try:
+            result = mod.predict(feature_vector.reshape(1, -1))
+            return result.tolist()
+        except Exception as e:
+            raise GeneratePredictionError("Model check error: Unable generate xgboost prediction: " + str(e))
+
+    else:  # whatever else:
         try:
             result = mod.predict(feature_vector.reshape(1, -1))
             return result.tolist()

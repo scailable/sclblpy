@@ -10,7 +10,8 @@ sclblpy is only functional in combination with a valid Scailable user account.
 - **Website:** [https://www.scailable.net](https://www.scailable.net)
 - **Docs:** [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
 - **Get an account:** [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)
-- **Source:**[https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
+- **Source:** [https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
+- **Getting started:** [https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started](https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started)
 
 ## Background
 The sclblpy package allows users with a valid scailable account (see [https://admin.sclbl.net](https://admin.sclbl.net))
@@ -138,11 +139,20 @@ sp.upload(mod, fv, docs=docs)
 Next to the main ``upload()`` function, the package also exposes the following functions to administer endpoints:
 
 ````
-# List all endpoints owned by the current user
+# List all endpoints owned by the current user:
 sp.endpoints()
 
-# Remove an endpoint
-sp.delete_endpoint("cfid-cfid-cfid")
+# Remove an endpoint:
+sp.delete_endpoint(cfid)  # Where cfid is the compute function id
+
+# Update an existing endpoint:
+sp.update(mod, fv, cfid, docs)  # Where cfid is the compute function id
+
+# Update an existing ednpoint without updating the docs:
+sp.update(mod, fv, cfid) 
+
+# Update only the docs of an existing endpoint:
+sp.update_docs(cfid, docs)
 ````
 
 Additionally, the following methods are available:
@@ -162,6 +172,84 @@ sp.remove_credentials()
 
 ````
 
+## Running an uploaded model
+After uploading a model to Scailable using the `sclblpy` package, you might also
+want to use `python` to consume the model. You will find example `python` code to consume
+your created endpiont in your [Scailable admin](https://admin.sclbl.net) which you can directly
+copy-paste into your python project. But, if you want it even easier you can also
+add the following to your code:
+
+````python
+from sclblpy import run
+
+cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo.
+fv = [1,2,3,4,5]
+result = run(cfid, fv)
+
+print(result) # Prints the full result from the Scailable server.
+````
+
+
+## Supported models
+
+The list of models supported by the current version of the `sclblpy` package can always be retrieved 
+using the `list_models()` function. Here we provide an overview:
+
+Package | Model | Tested (05052020) | Note 
+--- | --- | --- | --- 
+lightgbm | LGBMClassifier | ok |  
+lightgbm | LGBMRegressor | ok |  
+sklearn | ARDRegression | ok |  
+sklearn | BayesianRidge | ok |  
+sklearn | DecisionTreeClassifier | ok |  
+sklearn | DecisionTreeRegressor | ok |  
+sklearn | ElasticNet | ok |  
+sklearn | ElasticNetCV | ok |  
+sklearn | ExtraTreeClassifier | ok |  
+sklearn | ExtraTreeRegresso | ok |  
+sklearn | ExtraTreesClassifier | ok |  
+sklearn | ExtraTreesRegressor | ok |  
+sklearn | HuberRegressor | ok |  
+sklearn | Lars | ok |  
+sklearn | LarsCV | ok |  
+sklearn | Lasso | ok |  
+sklearn | LassoCV | ok |  
+sklearn | LassoLars | ok |  
+sklearn | LassoLarsCV | ok |  
+sklearn | LassoLarsIC | ok |  
+sklearn | LinearRegression | ok |  
+sklearn | LinearSVC | ok |  
+sklearn | LinearSVR | ok |  
+sklearn | LogisticRegression | ok |  
+sklearn | LogisticRegressionCV | ok |  
+sklearn | NuSVC | ok |  
+sklearn | NuSVR | ok |  
+sklearn | OrthogonalMatchingPursuit | ok |  
+sklearn | OrthogonalMatchingPursuitCV | ok |  
+sklearn | PassiveAggressiveClassifier | ok |  
+sklearn | PassiveAggressiveRegressor | ok |  
+sklearn | Perceptron | ok |  
+sklearn | RandomForestClassifier | ok |  
+sklearn | RandomForestRegressor | ok |  
+sklearn | RANSACRegressor | ok |  
+sklearn | Ridge | ok |  
+sklearn | RidgeClassifier | ok |  
+sklearn | RidgeClassifierCV | ok |  
+sklearn | RidgeCV | ok |  
+sklearn | SGDClassifier | ok |  
+sklearn | SGDRegressor | ok |  
+sklearn | SVC | ok |  
+sklearn | SVR | ok |  
+sklearn | TheilSenRegressor | ok |  
+statsmodels | Generalized Least Squares (GLS) | ok |  
+statsmodels | Generalized Least Squares with AR Errors (GLSAR) | ok |  
+statsmodels | Ordinary Least Squares (OLS) | ok |  
+statsmodels | Quantile Regression (QuantReg) | ok |  
+statsmodels | Weighted Least Squares (WLS) | ok |  
+xgboost | XGBClassifier | ok |  
+xgboost | XGBRegressor | ok |  
+xgboost | XGBRFClassifier | ok | Binary only
+xgboost | XGBRFRegressor | ok |  
 
 ## Dependencies
 
@@ -181,5 +269,7 @@ The `statsmodels` and `xgboost` packages are imported when used.
 * The methods `_set_toolchain_URL(string)` and `_set_usermanager_URL(string)` can be used to change the default location of
 the toolchain and user-management function. These are useful when running the Scailable stack locally. Also the method `_toggle_debug_mode()` can
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
+* Docs generated using `pdoc --html --html-dir docs sclblpy/main.py`
 
-For more information please contact us at [go@scailable.net](mailto:go@scailable.net).
+If you are having trouble using the `sclblpy` package, please [submit an issue to our github](https://github.com/scailable/sclblpy/issues/new), 
+we will try to fix it as quickly as possible!
