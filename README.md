@@ -10,7 +10,8 @@ sclblpy is only functional in combination with a valid Scailable user account.
 - **Website:** [https://www.scailable.net](https://www.scailable.net)
 - **Docs:** [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
 - **Get an account:** [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)
-- **Source:**[https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
+- **Source:** [https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
+- **Getting started:** [https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started](https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started)
 
 ## Background
 The sclblpy package allows users with a valid scailable account (see [https://admin.sclbl.net](https://admin.sclbl.net))
@@ -171,9 +172,23 @@ sp.remove_credentials()
 
 ````
 
+## Running an uploaded model
+After uploading a model to Scailable using the `sclblpy` package, you might also
+want to use `python` to consume the model. You will find example `python` code to consume
+your created endpiont in your [Scailable admin](https://admin.sclbl.net) which you can directly
+copy-paste into your python project. But, if you want it even easier you can also
+add the following to your code:
+
+````python
+from sclblpy import run
+
+cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo
+fv = [1,2,3,4,5]
+run(cfid, fv)
+````
+
+
 ## Supported models
-
-
 
 The list of models supported by the current version of the `sclblpy` package can always be retrieved 
 using the `list_models()` function. Here we provide an overview:
@@ -254,4 +269,5 @@ the toolchain and user-management function. These are useful when running the Sc
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
 * Docs generated using `pdoc --html --html-dir docs sclblpy/main.py`
 
-For more information please contact us at [go@scailable.net](mailto:go@scailable.net).
+If you are having trouble using the `sclblpy` package, please [submit an issue to our github](https://github.com/scailable/sclblpy/issues/new), 
+we will try to fix it as quickly as possible!

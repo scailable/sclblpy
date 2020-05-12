@@ -36,5 +36,10 @@ class UploadModelError(Exception):
     pass
 
 
+class RunTaskError(Exception):
+    """ Run task error"""
+    pass
+
+
 if __name__ == '__main__':
     print("No command line options available for errors.py")

@@ -6,15 +6,15 @@ from sclblpy.errors import JWTError
 from sclblpy.main import _toggle_debug_mode
 
 # Script settings:
-RUN_TESTS = False  # Prevent unintended testing
+RUN_TESTS = True  # Prevent unintended testing
 DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 
 # For the tests to pass we need a valid username and password:
-USERNAME = "VALID_USERNAME"
-PASSWORD = "VALID_PASSWORD"
+USERNAME = "maurits@mauritskaptein.com"
+PASSWORD = "test"
 
 
 def test_JWT():

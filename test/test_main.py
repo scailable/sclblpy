@@ -3,7 +3,10 @@ import time
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
-    _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs
+    _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
+    _set_taskmanager_URL
+
+import sclblpy._globals as glob
 
 import numpy as np
 from sklearn import svm
@@ -15,6 +18,7 @@ DEBUG = True  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+TASKMANAGER_URL = "http://localhost:8080"
 
 
 def test_upload():
@@ -87,12 +91,32 @@ def test_update_docs():
 
     update_docs(cfid, {})
 
-    docs ={}
+    docs = {}
     docs['name'] = "UPDATED NAME"
     update_docs(cfid, docs)
 
     docs['documentation'] = "UPDATED MARKDOWN"
     update_docs(cfid, docs)
+
+
+def test_run():
+    """ Test running an endpoint
+
+    Note: Only works with valid cfid and valid fv.
+    """
+    # cfid = "e93d0176-90f8-11ea-b602-9600004e79cc"  # This is the integer sum demo
+    _set_taskmanager_URL(TASKMANAGER_URL)
+    cfid = "94c56078-8f9c-11ea-b5eb-a4d18cd729d6"
+
+    fv = [1, 2, 3, 4, 5]
+
+    result = run(cfid, fv)
+
+    assert result is not False, "Error in running test; are the cfid and featurve_vector ok?"
+    print(result)
+
+    if result['statusCode'] == 1:
+        print(result['result'])
 
 
 def test_remove_credentials():
@@ -125,6 +149,7 @@ def test_setting_URLs():
     """ Test url setters: """
     _set_toolchain_URL(TOOLCHAIN_URL)
     _set_usermanager_URL(ADMIN_URL)
+    _set_taskmanager_URL(TASKMANAGER_URL)
 
 
 def test_user_utils():
@@ -137,6 +162,13 @@ def test_user_utils():
 
 # Run tests
 if __name__ == '__main__':
+
+    test_setting_URLs()
+    print(glob.USER_MANAGER_URL)
+    print(glob.TOOLCHAIN_URL)
+    print(glob.TASK_MANAGER_URL)
+
+    test_run()
 
     if not RUN_TESTS:
         print("Not running tests.")
@@ -152,7 +184,7 @@ if __name__ == '__main__':
     print("===============================")
 
     test_user_utils()
-    test_setting_URLs()
+
 
     test_upload()
 
