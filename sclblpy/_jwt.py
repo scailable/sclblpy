@@ -138,10 +138,10 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
                 raise LoginError(result.get("JWT server error: " + result.get("error")))
             return False
 
-        # If a JSON contains a token and a uuid, all is ok:
-        if result.get("token") is not None and result.get("uuid") is not None:
+        # If a JSON contains a token and a uid, all is ok:
+        if result.get("token") is not None and result.get("uid") is not None:
             glob.JWT_TOKEN = result.get("token")
-            glob.JWT_USER_ID = result.get("uuid")
+            glob.JWT_USER_ID = result.get("uid")
             glob.JWT_TIMESTAMP = time.time()
             return True
         else:
