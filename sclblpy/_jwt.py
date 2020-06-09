@@ -130,10 +130,10 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
             return False
 
         if result.get("error") is not None:
+            if not glob.SILENT:
+                print("JWT authentication error: The server generated an error: " + result.get("error"))
             if _remove_file:
                 _remove_credentials()  # Removing user credentials since they are not right
-            if not glob.SILENT:
-                print("JWT error: the server generated an error: " + result.get("error"))
             if glob.DEBUG:
                 raise LoginError(result.get("JWT server error: " + result.get("error")))
             return False
@@ -305,7 +305,7 @@ def _remove_credentials():
             return False
         if not glob.SILENT:
             print("Your stored user credentials have been removed. \n"
-                  "Please re-enter your username and password next time you try to upload a model.")
+                  "You will have to re-enter your username and password next time.")
 
         return True
     else:

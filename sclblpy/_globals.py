@@ -25,6 +25,9 @@ JWT_TIMESTAMP: float = 0.0  # Timestamp in seconds.
 # Available models:
 SUPPORTED_MODELS: dict = {}  # List of supported models.
 
+# Pretty printing of example:
+EXAMPLE__BASE_URL: str = "https://admin.sclbl.net/run.html"
+
 
 if __name__ == '__main__':
     print("No command line options available for _globals.py.")
