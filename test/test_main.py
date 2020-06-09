@@ -170,6 +170,11 @@ if __name__ == '__main__':
     print(glob.TOOLCHAIN_URL)
     print(glob.TASK_MANAGER_URL)
 
+    #endpoints()
+    #test_upload()
+    #endpoints()
+    #exit()
+
     if not PRINTING:
         stop_print()
 

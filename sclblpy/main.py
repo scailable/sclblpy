@@ -1,6 +1,7 @@
 # File contains all public methods of the scblpy package
 import json
 import sys
+import urllib
 
 import requests
 
@@ -198,7 +199,10 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
 
         # user feedback:
         if not glob.SILENT:
-            print("Your model was successfully uploaded. \n")
+            print("Your model was successfully uploaded to Scailable!")
+            print("NOTE: After transpiling, we will send you an email and your model will be available at "
+                  "https://admin.sclbl.net.")
+            print("Or, alternatively, you can use the 'endpoints()' function to list all your uploaded models. \n")
 
         # remove bundle:
         if not _keep:
@@ -643,8 +647,7 @@ def endpoints(_verbose=True) -> dict:
         result = json.loads(response.text)
     except Exception as e:
         if not glob.SILENT:
-            print("We were unable retrieve your endpoints. \n"
-                  "Please try again later.")
+            print("We were unable retrieve your endpoints.")
         if glob.DEBUG:
             raise UserManagerError("Unable to retrieve endpoints. " + str(e))
         return False
@@ -653,10 +656,27 @@ def endpoints(_verbose=True) -> dict:
     if _verbose and not glob.SILENT:
         if not result:
             print("You currently do not own any active endpoints.")
+            print("\nNeed help getting started?")
+            print(" - See the sclblpy docs at https://pypi.org/project/sclblpy/.")
+            print(" - See our getting started tutorial at "
+                  "https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started.")
+            print(" - Or, login to your admin at https://admin.sclbl.net. \n")
+            print("NOTE: if you have just uploaded a model, please check your email; we will let you know when its "
+                  "available!\n")
         else:
-            print("You currently own the following endpoints:")
+            # Pretty printing of list
+            baseUrl = glob.EXAMPLE__BASE_URL
+            i = 1
+            print("You currently own the following endpoints:\n")
             for key in result:
-                print('Name: {}, cfid: {}.'.format(key['name'], key['cfid']))
+                url = baseUrl + "?cfid=" + key['cfid']
+                url += "&exin=" + urllib.parse.quote(key['exampleinput'])
+
+                print('  {}: {}, \n'
+                      '   - cfid: {} \n'
+                      '   - example: {} \n'.format(i, key['name'], key['cfid'], url))
+                i = i+1
+            print("Login at https://admin.sclbl.net to administer your endpoints and see integration examples.\n")
 
     return result
 

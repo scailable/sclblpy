@@ -13,3 +13,9 @@ from .main import upload, update, update_docs, run, endpoints, delete_endpoint, 
     start_print, _set_toolchain_URL, _set_usermanager_URL, _set_taskmanager_URL
 from .version import __version__
 
+# Simple welcome message:
+print("\n*** Thanks for importing sclblpy! ***")
+print("You can use the 'upload()' function to upload your models.")
+print("To inspect your currently uploaded models, use `endpoints()`.")
+print("Check the docs at https://pypi.org/project/sclblpy/ for more info. \n")
+
