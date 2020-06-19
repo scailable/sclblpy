@@ -2,19 +2,22 @@
 
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
 
-sclblpy is the core python package provided by Scailable to convert models fit in python to WebAssembly and
+`sclblpy` is the core python package provided by Scailable to convert models fit in python to WebAssembly and
 open them up as a REST endpoint. 
 
-sclblpy is only functional in combination with a valid Scailable user account.
+`sclblpy` is only functional in combination with a valid Scailable user account.
 
 - **Website:** [https://www.scailable.net](https://www.scailable.net)
-- **Docs:** [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
-- **Get an account:** [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)
+- **Docs:**
+   - On github: [https://github.com/scailable/sclblpy](https://github.com/scailable/sclblpy/blob/master/README.md)
+   - On pypi: [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
+   - API docs Scailable: [https://docs.sclbl.net](https://docs.sclbl.net)
+- **Get an account:** [https://www.scailable.net](https://www.scailable.net?access-code=sclblpy-installation)
 - **Source:** [https://github.com/scailable/sclblpy/](https://github.com/scailable/sclblpy/)
 - **Getting started:** [https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started](https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started)
 
 ## Background
-The sclblpy package allows users with a valid scailable account (see [https://admin.sclbl.net](https://admin.sclbl.net))
+The sclblpy package allows users with a valid scailable account (apply for one at [https://www.scailable.net](https://www.scailable.net?access-code=sclblpy-installation))
 to upload fitted ML / AI models to the Scailable toolchain server. This will result in:
 
 1. The model being tested on the client side.
@@ -56,7 +59,7 @@ This email also contains further details regarding the usage of your created end
 
 Note that upon first upload you will be prompted to provide your Scailable username and password; you can choose to
 store the provided credentials locally to enable easy login on subsequently uploads. (users can signup for an account at
- [https://admin.sclbl.net](https://admin.sclbl.net/signup.html)).
+ [https://www.scailable.net](https://www.scailable.net?access-code=sclblpy-installation)).
  
 ## Examples
 > These examples are merely intended to show the desired syntax for the various packages; we do not intend to fit models
@@ -195,7 +198,7 @@ print(result) # Prints the full result from the Scailable server.
 The list of models supported by the current version of the `sclblpy` package can always be retrieved 
 using the `list_models()` function. Here we provide an overview:
 
-Package | Model | Tested (05052020) | Note 
+Package | Model | Tested (19-06-2020) | Note 
 --- | --- | --- | --- 
 lightgbm | LGBMClassifier | ok |  
 lightgbm | LGBMRegressor | ok |  
