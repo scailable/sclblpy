@@ -610,17 +610,25 @@ def run(cfid, feature_vector) -> dict:
     return output
 
 
-def endpoints(_verbose=True) -> dict:
-    """Return the endpoints available for the current user.
+def endpoints(offset=0, limit=20, _verbose=True, _return=False) -> dict:
+    """Print or return the endpoints available for the current user.
 
-    Using the global JWT string this function returns a dict
-    of the endpoints by the current user.
+    Using the global JWT string this function by default prints a summary of the endpoints
+    owned by the current user. The endpoints can also be returned as a dict by setting _return=True.
+
+    Note that the call is paginated: use the offset and limit arguments to retrieve the desired
+    list of endpoints. Endpoints are sorted with the latest upload being first, and the function retrieves
+    the items from offset to (offset+limit). By default the 20 most recently created endpoints are returned.
 
     Args:
+        offset: Int indicating the pagination offset. Default 0
+        limit: Int inidcating the pagination limit. Default 20
         _verbose: Bool indicating whether the endpoints should be printed. Default True.
+        _return: Bool indicating whether the endpoints should be returned as a dict. Default False.
 
     Returns:
-         endpoints: a list containing all the endpoints by the current user. [{},{},{}]
+         endpoints: if _return = True, a dict containing all the endpoints by the current user. [{},{},{}]
+         otherwise the function will simply return True after printing the endpoints to the screen.
 
     Raises (in debug mode):
         JWTError if unable to obtain JWT authorization
@@ -637,7 +645,7 @@ def endpoints(_verbose=True) -> dict:
             raise JWTError("Unable to check JWT authorization. " + str(e))
         return False
 
-    url = glob.USER_MANAGER_URL + "/compute-functions/" + glob.JWT_USER_ID
+    url = glob.USER_MANAGER_URL + "/compute-functions/" + glob.JWT_USER_ID + "?limit=" + str(limit) + "&offset=" + str(offset)
     headers = {
         'Authorization': glob.JWT_TOKEN
     }
@@ -655,14 +663,17 @@ def endpoints(_verbose=True) -> dict:
     # print if requested:
     if _verbose and not glob.SILENT:
         if not result:
-            print("You currently do not own any active endpoints.")
-            print("\nNeed help getting started?")
-            print(" - See the sclblpy docs at https://pypi.org/project/sclblpy/.")
-            print(" - See our getting started tutorial at "
-                  "https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started.")
-            print(" - Or, login to your admin at https://admin.sclbl.net. \n")
-            print("NOTE: if you have just uploaded a model, please check your email; we will let you know when its "
-                  "available!\n")
+            if offset == 0:
+                print("You currently do not own any active endpoints.")
+                print("\nNeed help getting started?")
+                print(" - See the sclblpy docs at https://pypi.org/project/sclblpy/.")
+                print(" - See our getting started tutorial at "
+                      "https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started.")
+                print(" - Or, login to your admin at https://admin.sclbl.net. \n")
+                print("NOTE: if you have just uploaded a model, please check your email; we will let you know when its "
+                      "available!\n")
+            else:
+                print("No endpoints found given the current settings; You could try to decrease the offset.")
         else:
             # Pretty printing of list
             baseUrl = glob.EXAMPLE__BASE_URL
@@ -678,7 +689,10 @@ def endpoints(_verbose=True) -> dict:
                 i = i+1
             print("Login at https://admin.sclbl.net to administer your endpoints and see integration examples.\n")
 
-    return result
+    if _return:
+        return result
+    else:
+        return True
 
 
 def delete_endpoint(cfid: str) -> bool:
