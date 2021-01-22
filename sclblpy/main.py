@@ -15,6 +15,7 @@ from sclblpy.version import __version__
 
 
 # TODO(McK): Update documentation
+# TODO(McK): Clean up tests and imports.
 
 
 # upload is a wrapper for upload_onnx and upload_sklearn to provide backwards compatibility:
@@ -969,8 +970,65 @@ def assign(cfid, did, rid, _verbose=True):
             raise CreateAssignmentError("We were unable submit your assignment.")
         return False
 
-    #TODO(McK): Finalize posting an assignment.
-    #TODO(McK): Add test
+    # all ok, assign:
+    if auth:
+
+        url = glob.USER_MANAGER_URL + "/assign/" + glob.JWT_USER_ID
+
+        # Setup the actual request
+        data: dict = {
+            'modelId': cfid,
+            'deviceId': did,
+            'registrationId': rid
+        }
+        headers = {
+            'Authorization': glob.JWT_TOKEN,
+        }
+
+        try:
+            response = requests.post(url, headers=headers, data=json.dumps(data))
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: Unable to carry out the assignment; the usermanager is not available. \n"
+                      "Your model has not been assigned. \n")
+            if glob.DEBUG:
+                raise CreateAssignmentError("We were unable to obtain JWT authorization: " + str(e))
+            return False
+
+        # Error handling
+        print(response)
+        print(response.text)
+        try:
+            response_data = json.loads(response.text)
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: We did not receive a valid JSON response from the user manager. \n"
+                      "Your assignment has not been submitted. \n")
+            if glob.DEBUG:
+                raise CreateAssignmentError("We did not receive a valid response from the server: " + str(e))
+            return False
+
+        if response_data['error']:
+            if not glob.SILENT:
+                print("FATAL: An error was returned by the usermanager. \n"
+                      "Your assignment has not been submitted. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We did not receive a valid response from the server: " + response_data['error'])
+            return False
+
+        if glob.DEBUG:
+            print("The following content has been send to the usermanager to create an assignment:")
+            print(data)
+
+        # user feedback:
+        if not glob.SILENT:
+            if _verbose:
+                print("Your assignment has been added. \n")
+
+        return True
+
+    else:
+        return False
 
 
 # assignments gets all the assignments owned by the current user:

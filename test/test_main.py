@@ -5,7 +5,7 @@ from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
     _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
-    _set_taskmanager_URL, models, devices, assignments
+    _set_taskmanager_URL, models, devices, assignments, assign
 
 import sclblpy._globals as glob
 
@@ -62,6 +62,14 @@ def test_onnx_upload():
     docs['documentation'] = "A long .md thing...."
     check = upload("../test/files/model.onnx", "", docs, model_type="onnx")
     print("The result from onnx_upload is {}".format(check))
+
+
+def test_assign():
+    d = devices(_return=True, _verbose=False)[0]
+    m = models(_return=True, _verbose=False)[0]
+    print(d)
+    print(m)
+    assign(m['cfid'], d['did'], d['rid'])
 
 
 def test_update():
@@ -217,7 +225,8 @@ if __name__ == '__main__':
     #test_onnx_upload()
     #models()
     #devices()
-    assignments()
+    #assignments()
+    test_assign()
     #test_update_onnx()
 
     exit()
