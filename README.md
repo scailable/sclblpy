@@ -40,7 +40,7 @@ clf = svm.SVC()
 X, y = datasets.load_iris(return_X_y=True)
 clf.fit(X, y)
 
-# Create an example feature vector (required):
+# Create an example feature vector (required for sklearn models):
 row = X[130, :]
 
 # Create documentation (optional, but useful):

@@ -10,26 +10,245 @@ from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
 from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models, \
     _check_model
-from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTaskError
+from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTaskError, CreateAssignmentError
 from sclblpy.version import __version__
 
 
-def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
-    """Uploads a fitted model to Scailable.
+# TODO(McK): Update documentation
 
-    The upload function is the main workhorse of the sclblpy package.
-    The function first checks whether the supplied model is ok (part of the list and fitted).
 
-    Next, it checks whether an example row is provided and if so it creates the example
-    input and output .json objects.
+# upload is a wrapper for upload_onnx and upload_sklearn to provide backwards compatibility:
+def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False) -> bool:
+    """upload uploads a trained AI/ML model to Scailable.
 
-    Next, the docs are checked; if none are provided a warning is issued and a simple
+    The upload function is the main workhorse of the sclblpy package but effectively provides a
+    wrapper to choose between the
+     - upload_sklearn(mod, feature_vector, docs={}, email=True, _keep=False)
+     - upload_onnx(path, docs={}, email=True)
+    functions.
+
+    The function checks the type, and if type = "sklearn" (default) calls the upload_sklearn() function.
+    If type = "onnx" it calls the upload_onnx() function.
+
+    Behavior:
+    If type = "onnx"
+        - The function first checks if the supplied path indeed references a .onnx file
+        - Next, the docs are checked; if none are provided a warning is issued and a simple
+        name is provided based on the model type.
+        - Finally the onnx file and the supporting docs are uploaded to the toolchain.
+
+    If type = "sklearn"
+        - The function first checks whether the supplied model is ok (part of the list and fitted).
+        - Next, it checks whether an example row is provided and if so it creates the example
+        input and output .json objects.
+        - Next, the docs are checked; if none are provided a warning is issued and a simple
+        name is provided based on the model type.
+        - Subsequently, we package the whole thing, including details of the user system, into a
+        gzipped file that is stored on disc.
+        - Finally the whole package is uploaded to the toolchain.
+
+    Note: This method prints user-feedback by default. This feedback can be suppressed by calling the
+        stop_print() method.
+
+    Args:
+        mod: The model to be uploaded (type="sklearn" OR the path to the stored ONNX file (type="onnx").
+        features:
+            - An example feature_vector for your model (type="sklearn" only).
+            (i.e., the first row of your training data X obtained using row = X[0,:])
+            - The input str (binary) to the onnx model (type="onnx" only). Can be an empty string.
+        docs: A dict{} containing the fields 'name' and 'documentation'.
+        email: Bool indicating whether a confirmation email of a successful conversion should be send. Default True.
+        model_type: String indicating the type of model. Currently with options "sklearn" or "onnx". Default "sklearn"
+        _keep: Bool indicating whether the .gzipped file should be retained (type="sklearn" only). Default False.
+
+    Returns:
+        False if upload failed, true otherwise
+
+    Raises  (in debug mode):
+        UploadModelError if unable to successfully bundle and upload the model.
+    """
+    if model_type is "sklearn":
+        if features is "":
+            if not glob.SILENT:
+                print("FATAL: You cannot upload a sklearn model with an empty string as feature vector.")
+            if glob.DEBUG:
+                raise UploadModelError("Cannot upload sklearn model with empty string as feature vector.")
+            return False
+        if not upload_sklearn(mod, features, docs, email, _keep):
+            return False
+    elif model_type is "onnx":
+        if not upload_onnx(mod, features, docs, email):
+            return False
+    else:
+        if glob.DEBUG:
+            raise UploadModelError("Please specify a valid model type.")
+        return False
+
+    return True
+
+
+# upload_onnx uploads an onnx file to the toolchain-server
+def upload_onnx(path, example="", docs={}, email=True) -> bool:
+    """upload_onnx uploads a fitted onnx model to Scailable.
+
+    - The function first checks if the supplied path indeed references a .onnx file
+    - Next, the docs are checked; if none are provided a warning is issued and a simple
     name is provided based on the model type.
+    - Finally the onnx file and the supporting docs are uploaded to the toolchain.
 
-    Subsequently, we package the whole thing, including details of the user system, into a
+    Note: This method prints user-feedback by default. This feedback can be suppressed by calling the
+        stop_print() method.
+
+    Args:
+        path: The path referencing the onnx model location (i.e., the .onnx file location).
+        example: String example input for the onnx file.
+        docs: A dict{} containing the fields 'name' and 'documentation'.
+        email: Bool indicating whether a confirmation email of a successful conversion should be send. Default True.
+
+    Returns:
+        False if upload failed, true otherwise
+
+    Raises  (in debug mode):
+        UploadModelError if unable to successfully bundle and upload the model.
+    """
+    if glob.DEBUG:
+        print("We are checking your .onnx file...")
+
+    bundle = {}
+
+    # simply add example string to bundle:
+    bundle['example'] = example
+
+    # check the docs:
+    bundle['docs'] = {}
+    if docs:
+        bundle['docs'] = docs
+    else:
+        try:  # This should work, but catching the exception just in case:
+            name = path
+        except Exception:
+            name = "NAMELESS MODEL"
+        bundle['docs']['name'] = name
+        bundle['docs']['documentation'] = "-- EMPTY --"
+        if not glob.SILENT:
+            print("WARNING: You did not provide any documentation. \n"
+                  "We will simply use " + name + " as its name without further documentation.")
+
+    # check if file exists:
+    if not path.endswith('.onnx'):
+        if not glob.SILENT:
+            print("FATAL: You did not specify a .onnx path. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to open the specified onnx file (no .onnx extension).")
+
+    # try to open the file
+    try:
+        files = [('bundle', open(path, 'rb'))]
+    except Exception:
+        if not glob.SILENT:
+            print("FATAL: We were unable to open the specified onnx file. Is the path correct? \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to open the specified onnx file.")
+        return False
+
+    # check authorization:
+    auth = _check_jwt()
+    if not auth:
+        if not glob.SILENT:
+            print("FATAL: We were unable to obtain JWT authorization for your account. \n"
+                  "Your model has not been uploaded. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to obtain JWT authorization.")
+        return False
+
+    # get system information
+    bundle['system_info'] = _get_system_info()
+
+    # all ok, upload:
+    if auth:
+
+        url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID
+
+        # Hard coded tootlchain name:
+        toolchain_name = "onnx2c"
+
+        # Setup the actual request
+        data: dict = {
+            'email': email,
+            'package': __version__,
+            'toolchain': toolchain_name,
+            'name': bundle['docs'].get('name', "No name found."),
+            'docs': bundle['docs'].get('documentation', "No docs provided."),
+            'exampleInput': example,
+            'exampleOutput': ""
+        }
+        payload: dict = {
+            'data': json.dumps(data)
+        }
+
+        headers = {
+            'Authorization': glob.JWT_TOKEN,
+        }
+
+        # Do the request
+        try:
+            response = requests.post(url, headers=headers, data=payload, files=files)
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: Unable to carry out the upload request: the toolchain is not available. \n"
+                      "Your model has not been uploaded. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
+            return False
+
+        # Error handling
+        try:
+            response_data = json.loads(response.text)
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: We did not receive a valid JSON response from the toolchain-server. \n"
+                      "Your model has not been uploaded. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We did not receive a valid response from the server: " + str(e))
+            return False
+
+        if response_data['error']:
+            if not glob.SILENT:
+                print("FATAL: An error was returned by the toolchain-server. \n"
+                      "Your model has not been uploaded. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We did not receive a valid response from the server: " + response_data['error'])
+            return False
+
+        if glob.DEBUG:
+            print("The following content has been send to the toolchain server:")
+            print(bundle)
+
+        # user feedback:
+        if not glob.SILENT:
+            print("Your ONNX file was successfully uploaded to Scailable!")
+            print("NOTE: After transpiling, we will send you an email and your model will be available at "
+                  "https://admin.sclbl.net.")
+            print("Or, alternatively, you can use the 'models()' function to list all your uploaded models. \n")
+
+        return True
+
+    else:
+        return False
+
+
+# upload_sklearn uploads a fitted sklearn model to the tollchain server
+def upload_sklearn(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
+    """upload_sklearn uploads a fitted sklearn model to Scailable.
+
+    - The function first checks whether the supplied model is ok (part of the list and fitted).
+    - Next, it checks whether an example row is provided and if so it creates the example
+    input and output .json objects.
+    - Next, the docs are checked; if none are provided a warning is issued and a simple
+    name is provided based on the model type.
+    - Subsequently, we package the whole thing, including details of the user system, into a
     gzipped file that is stored on disc.
-
-    Finally the whole package is uploaded to the toolchain.
+    - Finally the whole package is uploaded to the toolchain.
 
     Note: This method prints user-feedback by default. This feedback can be suppressed by calling the
         stop_print() method.
@@ -48,6 +267,9 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     Raises  (in debug mode):
         UploadModelError if unable to successfully bundle and upload the model.
     """
+    if glob.DEBUG:
+        print("We are checking your uploaded sklearn model...")
+
     bundle = {}
 
     # Check model:
@@ -214,11 +436,215 @@ def upload(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
         return False
 
 
-def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
+# update updates an existing model
+def update(mod, features, cfid, docs={}, email=True, model_type="sklearn", _keep=False) -> bool:
     """Updates an already existing model.
 
     The update function is similar to the upload function in most respects (so, see its docs),
     but instead of creating a new endpoint it overwrites the docs and model of an already exisitng
+    endpoint. Thus, there is an additional argument "cfid" providing the computeFunction Id
+    of the endpoint that needs to be updated. Use sp.list_models() to get a list of your already
+    existing endpoints. Just like the upload function, update is a wrapper for:
+     - update_sklearn(mod, feature_vector, cfid, docs={}, email=True, _keep=False)
+     - update_onnx(path, cfid, example="", docs={}, email=True)
+
+    Note: If you solely want to change the documentation of an endpoint, you can either use the
+        update_docs() function or the online admin interface at https://admin.sclble.net.
+
+    Args:
+        mod: The model to be uploaded (type="sklearn" OR the path to the stored ONNX file (type="onnx").
+        features:
+            - An example feature_vector for your model (type="sklearn" only).
+            (i.e., the first row of your training data X obtained using row = X[0,:])
+            - The input str (binary) to the onnx model (type="onnx" only). Can be an empty string.
+        cfid: a string with a valid computeFunction ID.
+        docs: A dict{} containing the fields 'name' and 'documentation'.
+        email: Bool indicating whether a confirmation email of a successful conversion should be send. Default True.
+        model_type: String indicating the type of model. Currently with options "sklearn" or "onnx". Default "sklearn"
+        _keep: Bool indicating whether the .gzipped file should be retained (type="sklearn" only). Default False.
+
+    Returns:
+        False if upload failed, true otherwise
+
+    Raises  (in debug mode):
+        UploadModelError if unable to successfully bundle and upload the model.
+    """
+    if model_type is "sklearn":
+        if features is "":
+            if not glob.SILENT:
+                print("FATAL: You cannot upload a sklearn model with an empty string as feature vector.")
+            if glob.DEBUG:
+                raise UploadModelError("Cannot upload sklearn model with empty string as feature vector.")
+            return False
+        if not update_sklearn(mod, features, cfid, docs=docs, email=email, _keep=_keep):
+            return False
+    elif model_type is "onnx":
+        if not update_onnx(mod, cfid, example=features, docs=docs, email=email):
+            return False
+    else:
+        if glob.DEBUG:
+            raise UploadModelError("Please specify a valid model type.")
+        return False
+
+    return True
+
+
+# update_onnx updates an onnx model
+def update_onnx(path, cfid, example="", docs={}, email=True) -> bool:
+    """upload_onnx updates a fitted onnx model to Scailable.
+
+    The update function is similar to the upload function in most respects (so, see its docs),
+    but instead of creating a new endpoint it overwrites the docs and model of an already existing
+    endpoint. Thus, there is an additional argument "cfid" providing the computeFunction Id
+    of the endpoint that needs to be updated. Use sp.list_models() to get a list of your already
+    existing endpoints.
+
+    Note: If you solely want to change the documentation of an endpoint, you can either use the
+        update_docs() function or the online admin interface at https://admin.sclble.net.
+
+    Args:
+        path: The path referencing the onnx model location (i.e., the .onnx file location).
+        cfid: a string with a valid computeFunction ID.
+        example: String example input for the onnx file.
+        docs: A dict{} containing the fields 'name' and 'documentation'.
+        email: Bool indicating whether a confirmation email of a successful conversion should be send. Default True.
+
+    Returns:
+        False if upload failed, true otherwise
+
+    Raises  (in debug mode):
+        UploadModelError if unable to successfully bundle and upload the model.
+    """
+    if glob.DEBUG:
+        print("We are checking your updated .onnx file...")
+
+    bundle = {}
+
+    # simply add example string to bundle:
+    bundle['example'] = example
+
+    # check the docs:
+    bundle['docs'] = {}
+    if docs:
+        bundle['docs'] = docs
+    else:
+        try:  # This should work, but catching the exception just in case:
+            name = path
+        except Exception:
+            name = "NAMELESS MODEL"
+        bundle['docs']['name'] = name
+        bundle['docs']['documentation'] = "-- EMPTY --"
+        if not glob.SILENT:
+            print("WARNING: You did not provide any documentation. \n"
+                  "We will simply use " + name + " as its name without further documentation.")
+
+    # check if file exists:
+    if not path.endswith('.onnx'):
+        if not glob.SILENT:
+            print("FATAL: You did not specify a .onnx path. \n"
+                  "Your model has not been updated. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to open the specified onnx file (no .onnx extension).")
+
+    # try to open the file
+    try:
+        files = [('bundle', open(path, 'rb'))]
+    except Exception:
+        if not glob.SILENT:
+            print("FATAL: We were unable to open the specified onnx file. Is the path correct? \n"
+                  "Your model has not been updated. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to open the specified onnx file.")
+        return False
+
+    # check authorization:
+    auth = _check_jwt()
+    if not auth:
+        if not glob.SILENT:
+            print("FATAL: We were unable to obtain JWT authorization for your account. \n"
+                  "Your model has not been updated. \n")
+        if glob.DEBUG:
+            raise UploadModelError("We were unable to obtain JWT authorization.")
+        return False
+
+    # get system information
+    bundle['system_info'] = _get_system_info()
+
+    # all ok, upload:
+    if auth:
+
+        url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID + "/" + cfid
+
+        # Hard coded tootlchain name:
+        toolchain_name = "onnx2c"
+
+        # Setup the actual request
+        data: dict = {
+            'email': email,
+            'package': __version__,
+            'toolchain': toolchain_name,
+            'name': bundle['docs'].get('name', "No name found."),
+            'docs': bundle['docs'].get('documentation', "No docs provided."),
+            'exampleInput': example,
+            'exampleOutput': ""
+        }
+        payload: dict = {
+            'data': json.dumps(data)
+        }
+
+        headers = {
+            'Authorization': glob.JWT_TOKEN,
+        }
+
+        try:
+            response = requests.put(url, headers=headers, data=payload, files=files)
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: Unable to carry out the update request: the toolchain is not available. \n"
+                      "Your model has not been updated. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
+            return False
+
+        # Error handling
+        try:
+            response_data = json.loads(response.text)
+        except Exception as e:
+            if not glob.SILENT:
+                print("FATAL: We did not receive a valid JSON response from the toolchain-server. \n"
+                      "Your model has not been updated. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We did not receive a valid response from the server: " + str(e))
+            return False
+
+        if response_data['error']:
+            if not glob.SILENT:
+                print("FATAL: An error was returned by the toolchain-server. \n"
+                      "Your model has not been updated. \n")
+            if glob.DEBUG:
+                raise UploadModelError("We did not receive a valid response from the server: " + response_data['error'])
+            return False
+
+        if glob.DEBUG:
+            print("The following content has been send to the toolchain server:")
+            print(bundle)
+
+        # user feedback:
+        if not glob.SILENT:
+            print("Your model was successfully submitted for an update. \n")
+
+        return True
+
+    else:
+        return False
+
+
+# update_sklearn updates an sklearn model
+def update_sklearn(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
+    """Updates an already existing sklearn model.
+
+    The update function is similar to the upload function in most respects (so, see its docs),
+    but instead of creating a new endpoint it overwrites the docs and model of an already existing
     endpoint. Thus, there is an additional argument "cfid" providing the computeFunction Id
     of the endpoint that needs to be updated. Use sp.list_models() to get a list of your already
     existing endpoints.
@@ -241,6 +667,9 @@ def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
     Raises  (in debug mode):
         UploadModelError if unable to successfully bundle and upload the model.
     """
+    if glob.DEBUG:
+        print("We are checking your updated sklearn model...")
+
     bundle = {}
 
     # Check model:
@@ -314,7 +743,6 @@ def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
     if auth:
 
         url = glob.TOOLCHAIN_URL + "/upload/" + glob.JWT_USER_ID + "/" + cfid
-        print(url)
 
         # Map python package to the right toolchain:
         pkg_name = _get_model_package(mod)
@@ -342,8 +770,6 @@ def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
         payload: dict = {
             'data': json.dumps(data)
         }
-
-        print(data)
 
         files = [('bundle', open(glob.GZIP_BUNDLE, 'rb'))]
         headers = {
@@ -404,6 +830,7 @@ def update(mod, feature_vector, cfid, docs={}, email=True, _keep=False) -> bool:
         return False
 
 
+# update_docs updates the docs of a given model (but not the model itself:
 def update_docs(cfid, docs) -> bool:
     """Updates the documentation of an already existing model
 
@@ -509,10 +936,196 @@ def update_docs(cfid, docs) -> bool:
         return False
 
 
-def run(cfid, feature_vector) -> dict:
-    """run a compute-function previously uploaded to Scailable.
+# assign assigns a model to a device
+def assign(cfid, did, rid, _verbose=True):
+    """ Assign a model to a device.
 
-    The run function allows a user to execute a compute task that has been uploaded to Scailable and
+    Using the global JWT string this function assigns a model (using its cfid) to a device (using its did).
+
+    Args:
+        cfid: String identifying the model / compute-function
+        did: String identifying the device
+        rid: String identifying the registration ID of the device (not, run "devices"
+
+    Returns:
+        Boolean indicating whether the assignment was successful.
+    """
+    # check authorization:
+    auth = _check_jwt()
+    if not auth:
+        if not glob.SILENT:
+            print("FATAL: We were unable to obtain JWT authorization for your account. \n"
+                  "Your model has not been uploaded. \n")
+        if glob.DEBUG:
+            raise CreateAssignmentError("We were unable to obtain JWT authorization.")
+        return False
+
+    # check fields not empty
+    if not cfid or not did or not rid:
+        if not glob.SILENT:
+            print("FATAL: Please specify the correct ids. \n"
+                  "Your assignment has not been submitted. \n")
+        if glob.DEBUG:
+            raise CreateAssignmentError("We were unable submit your assignment.")
+        return False
+
+    #TODO(McK): Finalize posting an assignment.
+    #TODO(McK): Add test
+
+
+# assignments gets all the assignments owned by the current user:
+def assignments(offset=0, limit=20, _verbose=True, _return=False) -> dict:
+    """ Get all assignments (i.e., cfid-did combinations).
+
+    Args:
+        offset: Int indicating the pagination offset. Default 0
+        limit: Int inidcating the pagination limit. Default 20
+        _verbose: Bool indicating whether the endpoints should be printed. Default True.
+        _return: Bool indicating whether the endpoints should be returned as a dict. Default False.
+
+    Returns:
+         endpoints: if _return = True, a dict containing all the endpoints by the current user. [{},{},{}]
+         otherwise the function will simply return True after printing the endpoints to the screen.
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to retrieve endpoint details
+    """
+    try:
+        _check_jwt()
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable to renew your JWT lease. \n"
+                  "If this recurs use the remove_credentials() function to reset your login credentials.")
+        if glob.DEBUG:
+            raise JWTError("Unable to check JWT authorization. " + str(e))
+        return False
+
+    url = glob.USER_MANAGER_URL + "/assignments/user/" + glob.JWT_USER_ID + "?limit=" + str(limit) + "&offset=" + str(
+        offset)
+    headers = {
+        'Authorization': glob.JWT_TOKEN
+    }
+
+    try:
+        response = requests.request("GET", url, headers=headers, data={})
+        result = json.loads(response.text)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable retrieve your assignments.")
+        if glob.DEBUG:
+            raise UserManagerError("Unable to retrieve assignments. " + str(e))
+        return False
+
+    # print if requested:
+    if _verbose and not glob.SILENT:
+        if not result:
+            if offset == 0:
+                print("You have not yet made any assignments.")
+                print("\nNeed help getting started?")
+                print(" - See the sclblpy docs at https://pypi.org/project/sclblpy/.")
+                print(" - See our getting started tutorial at "
+                      "https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started.")
+                print(" - Or, login to your admin at https://admin.sclbl.net. \n")
+            else:
+                print("No assignments found given the current settings; You could try to decrease the offset.")
+        else:
+            # Pretty printing of list
+            baseUrl = glob.EXAMPLE__BASE_URL
+            i = 1
+            print("We found the following assignments:\n")
+            for key in result:
+                print('  {}: {} <-> {} \n'
+                      '   - cfid: {} \n'
+                      '   - did: {} \n'
+                      '   - rid: {} \n'.format(i, key['model_name'], key['device_name'], key['cfid'], key['did'], key['rid']))
+                i = i + 1
+
+    if _return:
+        return result
+    else:
+        return True
+
+
+# devices lists all the devices owned by the current user:
+def devices(offset=0, limit=20, _verbose=True, _return=False) -> dict:
+    """ Get all devices owned by the current user.
+
+    Args:
+        offset: Int indicating the pagination offset. Default 0
+        limit: Int inidcating the pagination limit. Default 20
+        _verbose: Bool indicating whether the endpoints should be printed. Default True.
+        _return: Bool indicating whether the endpoints should be returned as a dict. Default False.
+
+    Returns:
+         endpoints: if _return = True, a dict containing all the endpoints by the current user. [{},{},{}]
+         otherwise the function will simply return True after printing the endpoints to the screen.
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to retrieve endpoint details
+    """
+    try:
+        _check_jwt()
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable to renew your JWT lease. \n"
+                  "If this recurs use the remove_credentials() function to reset your login credentials.")
+        if glob.DEBUG:
+            raise JWTError("Unable to check JWT authorization. " + str(e))
+        return False
+
+    url = glob.USER_MANAGER_URL + "/devices/" + glob.JWT_USER_ID + "?limit=" + str(limit) + "&offset=" + str(
+        offset)
+    headers = {
+        'Authorization': glob.JWT_TOKEN
+    }
+
+    try:
+        response = requests.request("GET", url, headers=headers, data={})
+        result = json.loads(response.text)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable retrieve your devices.")
+        if glob.DEBUG:
+            raise UserManagerError("Unable to retrieve devices. " + str(e))
+        return False
+
+    # print if requested:
+    if _verbose and not glob.SILENT:
+        if not result:
+            if offset == 0:
+                print("You have not yet registered any devices")
+                print("\nNeed help getting started?")
+                print(" - See the sclblpy docs at https://pypi.org/project/sclblpy/.")
+                print(" - See our getting started tutorial at "
+                      "https://github.com/scailable/sclbl-tutorials/tree/master/sclbl-101-getting-started.")
+                print(" - Or, login to your admin at https://admin.sclbl.net. \n")
+            else:
+                print("No devices found given the current settings; You could try to decrease the offset.")
+        else:
+            # Pretty printing of list
+            baseUrl = glob.EXAMPLE__BASE_URL
+            i = 1
+            print("We found the following device registrations:\n")
+            for key in result:
+                print('  {}: {}, \n'
+                      '   - did: {} \n'
+                      '   - rid: {} \n'.format(i, key['name'], key['did'], key['rid']))
+                i = i + 1
+            print("Login at https://admin.sclbl.net to administer your devices.\n")
+
+    if _return:
+        return result
+    else:
+        return True
+
+
+# run generates inference for a sklearn model
+def run(cfid, feature_vector) -> dict:
+    """run a sklearn model that has previously been uploaded to Scailable.
+
+    The run function allows a user to execute a sklearn task that has been uploaded to Scailable and
     for which a REST endpoint is thus available.
 
     The user specifies the compute-function id, and the desired input, and receives the resulting output
@@ -610,6 +1223,30 @@ def run(cfid, feature_vector) -> dict:
     return output
 
 
+# models lists the models / endpoints for the current user.
+def models(offset=0, limit=20, _verbose=True, _return=False) -> dict:
+    """ Print or return the endpoints available for the current user.
+
+    Simple wrapper for the endpoints() function.
+
+    Args:
+        offset: Int indicating the pagination offset. Default 0
+        limit: Int inidcating the pagination limit. Default 20
+        _verbose: Bool indicating whether the endpoints should be printed. Default True.
+        _return: Bool indicating whether the endpoints should be returned as a dict. Default False.
+
+    Returns:
+         endpoints: if _return = True, a dict containing all the endpoints by the current user. [{},{},{}]
+         otherwise the function will simply return True after printing the endpoints to the screen.
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to retrieve endpoint details
+    """
+    return endpoints(offset=offset, limit=limit, _verbose=_verbose, _return=_return)
+
+
+# endpoints lists the models / end
 def endpoints(offset=0, limit=20, _verbose=True, _return=False) -> dict:
     """Print or return the endpoints available for the current user.
 
@@ -645,7 +1282,8 @@ def endpoints(offset=0, limit=20, _verbose=True, _return=False) -> dict:
             raise JWTError("Unable to check JWT authorization. " + str(e))
         return False
 
-    url = glob.USER_MANAGER_URL + "/compute-functions/" + glob.JWT_USER_ID + "?limit=" + str(limit) + "&offset=" + str(offset)
+    url = glob.USER_MANAGER_URL + "/compute-functions/" + glob.JWT_USER_ID + "?limit=" + str(limit) + "&offset=" + str(
+        offset)
     headers = {
         'Authorization': glob.JWT_TOKEN
     }
@@ -686,7 +1324,7 @@ def endpoints(offset=0, limit=20, _verbose=True, _return=False) -> dict:
                 print('  {}: {}, \n'
                       '   - cfid: {} \n'
                       '   - example: {} \n'.format(i, key['name'], key['cfid'], url))
-                i = i+1
+                i = i + 1
             print("Login at https://admin.sclbl.net to administer your endpoints and see integration examples.\n")
 
     if _return:
@@ -695,6 +1333,26 @@ def endpoints(offset=0, limit=20, _verbose=True, _return=False) -> dict:
         return True
 
 
+# delete model deletes a model:
+def delete_model(cfid: str) -> bool:
+    """Deletes a model by cfid.
+
+    Delete an model owned by the currently logged in user by cfid.
+
+    Args:
+        cfid: String of the compute function id.
+
+    Returns:
+        True if successful, False otherwise.
+
+    Raises  (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to delete endpoints
+    """
+    return delete_endpoint(cfid)
+
+
+# delete_endpoint deletes a given endpoint by id
 def delete_endpoint(cfid: str) -> bool:
     """Deletes an endpoint by cfid.
 
@@ -916,4 +1574,3 @@ def _toggle_debug_mode() -> bool:
 # No command line options for this script:
 if __name__ == '__main__':
     print("No command line options available for main.py.")
-

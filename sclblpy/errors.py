@@ -36,6 +36,11 @@ class UploadModelError(Exception):
     pass
 
 
+class CreateAssignmentError(Exception):
+    """ CreateAssignment error """
+    pass
+
+
 class RunTaskError(Exception):
     """ Run task error"""
     pass

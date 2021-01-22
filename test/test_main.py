@@ -1,10 +1,11 @@
+import os
 import time
 
 from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
     _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
-    _set_taskmanager_URL
+    _set_taskmanager_URL, models, devices, assignments
 
 import sclblpy._globals as glob
 
@@ -19,6 +20,9 @@ PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 TASKMANAGER_URL = "http://localhost:8080"
+
+
+# TODO(McK): Opschonen tests main + add asserts.
 
 
 def test_upload():
@@ -49,6 +53,17 @@ def test_upload():
     # assert pred == [2], "Prediction is not correct."
 
 
+def test_onnx_upload():
+    """ Test upload_onnx """
+
+    # Add docs
+    docs = {}
+    docs['name'] = "Name of ONNX model"
+    docs['documentation'] = "A long .md thing...."
+    check = upload("../test/files/model.onnx", "", docs, model_type="onnx")
+    print("The result from onnx_upload is {}".format(check))
+
+
 def test_update():
     """ Test the update function"""
 
@@ -65,7 +80,7 @@ def test_update():
 
     # Get an existing endpoint to update
     try:
-        cfid = endpoints(False)[0]["cfid"]
+        cfid = endpoints(_verbose=False, _return=True)[0]["cfid"]
     except Exception as e:
         print("No endpoint to overwrite found")
         assert False == True, "no endpoint found for overwrite test"
@@ -79,12 +94,30 @@ def test_update():
     update(clf, row, cfid, docs=docs)
 
 
+def test_update_onnx():
+    """ Test update onnx """
+    # Add and feature vector
+    docs = {'name': "Name of model - UPDATED-ONNX", 'documentation': "A long .md thing.... UPDATED"}
+
+    # Get an existing endpoint to update
+    try:
+        cfid = endpoints(_verbose=False, _return=True)[0]["cfid"]
+    except Exception as e:
+        print("No endpoint to overwrite found")
+        assert False == True, "no endpoint found for overwrite test"
+
+    print("Updating: " + cfid)
+
+    # Overwrite with valid docs:
+    update("../test/files/model.onnx", "", cfid, docs=docs, model_type="onnx")
+
+
 def test_update_docs():
     """ Test the update docs function """
 
     # Get an existing endpoint to update
     try:
-        cfid = endpoints(False)[0]["cfid"]
+        cfid = endpoints(_return=True)[0]["cfid"]
     except Exception as e:
         print("No endpoint to overwrite found")
         assert False == True, "no endpoint found for overwrite test"
@@ -165,10 +198,8 @@ if __name__ == '__main__':
         print("Not running tests.")
         exit()
 
+    # Set target urls.
     test_setting_URLs()
-    print(glob.USER_MANAGER_URL)
-    print(glob.TOOLCHAIN_URL)
-    print(glob.TASK_MANAGER_URL)
 
     if not PRINTING:
         stop_print()
@@ -182,7 +213,12 @@ if __name__ == '__main__':
     #test_user_utils()
     #test_remove_credentials()
 
-    test_upload()
+    #test_upload()
+    #test_onnx_upload()
+    #models()
+    #devices()
+    assignments()
+    #test_update_onnx()
 
     exit()
 
