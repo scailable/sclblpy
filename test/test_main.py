@@ -13,7 +13,7 @@ from sklearn import svm
 from sklearn import datasets
 
 # Script settings:
-RUN_TESTS = False  # Prevent unintended testing
+RUN_TESTS = True  # Prevent unintended testing
 DEBUG = True  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
@@ -41,12 +41,12 @@ def test_upload():
     assert upload(clf, row, docs=docs) is True, "This should be valid."
 
     # Test saving and loading:
-    upload(clf, row, docs=docs, _keep=True)
-    obj = _gzip_load()
-    _gzip_delete()
-    mod = obj['fitted_model']
-    pred = mod.predict(row.reshape(1, -1))
-    assert pred == [2], "Prediction is not correct."
+    # upload(clf, row, docs=docs, _keep=True)
+    # obj = _gzip_load()
+    # _gzip_delete()
+    # mod = obj['fitted_model']
+    # pred = mod.predict(row.reshape(1, -1))
+    # assert pred == [2], "Prediction is not correct."
 
 
 def test_update():
@@ -179,11 +179,12 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
-    test_user_utils()
-
-    test_remove_credentials()
+    #test_user_utils()
+    #test_remove_credentials()
 
     test_upload()
+
+    exit()
 
     print("Wait, toolchain needs to finish....")
     time.sleep(10)
