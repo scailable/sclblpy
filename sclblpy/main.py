@@ -1,10 +1,7 @@
 # File contains all public methods of the scblpy package
 import json
-import sys
 import urllib
-
 import requests
-
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
@@ -12,10 +9,6 @@ from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_mod
     _check_model
 from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTaskError, CreateAssignmentError
 from sclblpy.version import __version__
-
-
-# TODO(McK): Update documentation
-# TODO(McK): Clean up tests and imports.
 
 
 # upload is a wrapper for upload_onnx and upload_sklearn to provide backwards compatibility:
@@ -238,7 +231,7 @@ def upload_onnx(path, example="", docs={}, email=True) -> bool:
         return False
 
 
-# upload_sklearn uploads a fitted sklearn model to the tollchain server
+# upload_sklearn uploads a fitted sklearn model to the toolchain server
 def upload_sklearn(mod, feature_vector, docs={}, email=True, _keep=False) -> bool:
     """upload_sklearn uploads a fitted sklearn model to Scailable.
 
@@ -938,7 +931,7 @@ def update_docs(cfid, docs) -> bool:
 
 
 # assign assigns a model to a device
-def assign(cfid, did, rid, _verbose=True):
+def assign(cfid, did, rid, _verbose=False):
     """ Assign a model to a device.
 
     Using the global JWT string this function assigns a model (using its cfid) to a device (using its did).
@@ -947,9 +940,14 @@ def assign(cfid, did, rid, _verbose=True):
         cfid: String identifying the model / compute-function
         did: String identifying the device
         rid: String identifying the registration ID of the device (not, run "devices"
+        _verbose: Print feedback, default False
 
     Returns:
         Boolean indicating whether the assignment was successful.
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        CreateAssignmentError for other failures.
     """
     # check authorization:
     auth = _check_jwt()
@@ -996,8 +994,6 @@ def assign(cfid, did, rid, _verbose=True):
             return False
 
         # Error handling
-        print(response)
-        print(response.text)
         try:
             response_data = json.loads(response.text)
         except Exception as e:
@@ -1089,7 +1085,6 @@ def assignments(offset=0, limit=20, _verbose=True, _return=False) -> dict:
                 print("No assignments found given the current settings; You could try to decrease the offset.")
         else:
             # Pretty printing of list
-            baseUrl = glob.EXAMPLE__BASE_URL
             i = 1
             print("We found the following assignments:\n")
             for key in result:
@@ -1103,6 +1098,51 @@ def assignments(offset=0, limit=20, _verbose=True, _return=False) -> dict:
         return result
     else:
         return True
+
+
+# delete_assignments delete an assignment using its aid:
+def delete_assignment(aid) -> bool:
+    """ Delete an assignment
+
+    Args:
+        aid: String, the assignment id (UUID format)
+
+    Returns:
+        Boolean, True if assignment is deleted
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to retrieve endpoint details
+    """
+    try:
+        _check_jwt()
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable to renew your JWT lease. \n"
+                  "If this recurs use the remove_credentials() function to reset your login credentials.")
+        if glob.DEBUG:
+            raise JWTError("Unable to check JWT authorization. " + str(e))
+        return False
+
+    url = glob.USER_MANAGER_URL + "/assign/" + glob.JWT_USER_ID + "/" + aid
+    headers = {
+        'Authorization': glob.JWT_TOKEN
+    }
+
+    try:
+        response = requests.request("DELETE", url, headers=headers)
+        result = json.loads(response.text)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable delete your assignment.")
+        if glob.DEBUG:
+            raise UserManagerError("Unable to delete assignment. " + str(e))
+        return False
+
+    if glob.DEBUG:
+        print(result)
+
+    return True
 
 
 # devices lists all the devices owned by the current user:
@@ -1480,6 +1520,7 @@ def delete_endpoint(cfid: str) -> bool:
     return True
 
 
+# remove_credentials removes the user credentials
 def remove_credentials(_verbose=True) -> bool:
     """Remove your stored credentials.
 
@@ -1505,6 +1546,7 @@ def remove_credentials(_verbose=True) -> bool:
         return False
 
 
+# stop_print stops verbose printing of the package
 def stop_print(_verbose=False) -> bool:
     """Stop ALL printing of user feedback from package.
 
@@ -1520,6 +1562,7 @@ def stop_print(_verbose=False) -> bool:
     return True
 
 
+# start_print starts verbose printing of the package
 def start_print() -> bool:
     """(re)start printing user feedback
 
@@ -1532,6 +1575,7 @@ def start_print() -> bool:
     return True
 
 
+# list_models lists all supported sklearn models
 def list_models() -> dict:
     """Print or return a list of all supported models.
 
@@ -1548,6 +1592,7 @@ def list_models() -> dict:
     return glob.SUPPORTED_MODELS
 
 
+# _set_toolchain_URL sets the location of the toolchain (for local testing)
 def _set_toolchain_URL(url: str) -> str:
     """Change the location of the toolchain server.
 
@@ -1568,6 +1613,7 @@ def _set_toolchain_URL(url: str) -> str:
     return glob.TOOLCHAIN_URL
 
 
+# _set_usermanager_URL sets the location of the usermanager
 def _set_usermanager_URL(url: str) -> str:
     """Change the location of the toolchain server
 
@@ -1588,6 +1634,7 @@ def _set_usermanager_URL(url: str) -> str:
     return glob.USER_MANAGER_URL
 
 
+# _set_taskmanager_URL sets the location of the taskmanager
 def _set_taskmanager_URL(url: str) -> str:
     """Change the location of the task manager
 
@@ -1608,6 +1655,7 @@ def _set_taskmanager_URL(url: str) -> str:
     return glob.TASK_MANAGER_URL
 
 
+# _toggle_debug_mode turns debugging of or on.
 def _toggle_debug_mode() -> bool:
     """Set debug to true or false.
 

@@ -11,7 +11,7 @@ setuptools.setup(
     version=__version__,
     author="Maurits Kaptein",
     author_email="maurits.kaptein@scailable.net",
-    description="Python package for uploading models to Scailable toolchain.",
+    description="Python package for uploading sklearn and onnx models to Scailable toolchain.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True,

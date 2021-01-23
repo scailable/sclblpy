@@ -10,7 +10,7 @@ if sys.version_info < (3, 0):
 
 from .main import upload, upload_sklearn, upload_onnx, update, update_sklearn, update_onnx, update_docs, \
     endpoints, delete_endpoint, models, delete_model, \
-    devices, assignments, assign, \
+    devices, assignments, assign, delete_assignment, \
     run, remove_credentials, list_models, \
     stop_print, start_print, \
     _set_toolchain_URL, _set_usermanager_URL, _set_taskmanager_URL
