@@ -5,7 +5,7 @@ from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
     _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
-    _set_taskmanager_URL, models, devices, assignments, assign, delete_assignment, delete_model
+    _set_taskmanager_URL, models, devices, delete_device, assignments, assign, delete_assignment, delete_model
 
 import sclblpy._globals as glob
 
@@ -14,9 +14,9 @@ from sklearn import svm
 from sklearn import datasets
 
 # Script settings:
-RUN_TESTS = True  # Prevent unintended testing
-DEBUG = False  # Set to debug mode; if true it will raise exceptions
-PRINTING = False  # Toggle printing on and off.
+RUN_TESTS = False  # Prevent unintended testing
+DEBUG = True  # Set to debug mode; if true it will raise exceptions
+PRINTING = True  # Toggle printing on and off.
 ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
 TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 TASKMANAGER_URL = "http://localhost:8080"
@@ -175,6 +175,31 @@ def test_endpoints_functions():
         assert delete_model(cfid) is True, "Should be able to delete a model."
 
 
+def test_devices_functions():
+    """ test get, delete for devices """
+
+    # Get existing devices
+    device_list = devices(_return=True)
+    assert isinstance(device_list, list) is True, "The devices should be a list."
+    assert (len(device_list) > 0) is True, "There should be at least one device for this test to run."
+
+    count = len(device_list)
+    try:
+        did = device_list[0]['did']
+    except Exception as e:
+        print("Unable to find device ID.")
+        assert False == True, "Unable to find device ID."
+
+    # check delete:
+    result = delete_device(did)
+    assert result is True, "Failed to delete device."
+
+    # check counts:
+    device_list2 = devices(_return=True)
+    count2 = len(device_list2)
+    assert (count2 == (count-1)) is True, "The deleted device count is not correct."
+
+
 # More obscure tests / please read docstrings and make sure settings are correct.
 def test_run():
     """ Test running an endpoint
@@ -242,6 +267,7 @@ if __name__ == '__main__':
     test_update_docs()  # update only docs test
     test_assign_functions()  # test creating and removing assignments
     test_endpoints_functions()  # test getting and deleting models
+    test_devices_functions()  # test device get and delete
 
     # More obscure tests, not run by default / commented out
     #test_user_utils()

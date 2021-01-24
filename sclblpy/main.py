@@ -1227,6 +1227,51 @@ def devices(offset=0, limit=20, _verbose=True, _return=False) -> dict:
         return True
 
 
+# delete_device delete a device using its device id
+def delete_device(did) -> bool:
+    """ Delete a device
+
+    Args:
+        did: String, the device id (aaa-bbb-ccc format)
+
+    Returns:
+        Boolean, True if device is deleted
+
+    Raises (in debug mode):
+        JWTError if unable to obtain JWT authorization
+        UserManagerError if unable to retrieve endpoint details
+    """
+    try:
+        _check_jwt()
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable to renew your JWT lease. \n"
+                  "If this recurs use the remove_credentials() function to reset your login credentials.")
+        if glob.DEBUG:
+            raise JWTError("Unable to check JWT authorization. " + str(e))
+        return False
+
+    url = glob.USER_MANAGER_URL + "/device/" + glob.JWT_USER_ID + "/" + did
+    headers = {
+        'Authorization': glob.JWT_TOKEN
+    }
+
+    try:
+        response = requests.request("DELETE", url, headers=headers)
+        result = json.loads(response.text)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable delete your device.")
+        if glob.DEBUG:
+            raise UserManagerError("Unable to delete device. " + str(e))
+        return False
+
+    if glob.DEBUG:
+        print(result)
+
+    return True
+
+
 # run generates inference for a sklearn model
 def run(cfid, feature_vector) -> dict:
     """run a sklearn model that has previously been uploaded to Scailable.

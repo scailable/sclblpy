@@ -233,6 +233,9 @@ sp.update_docs(cfid, docs)
 # See all devices:
 sp.devices(offset=0, limit=20, _verbose=True, _return=False)
 
+# Delete device:
+sp.delete_device(did)
+
 # See all assignments:
 sp.assignments(offset=0, limit=20, _verbose=True, _return=False)
 
