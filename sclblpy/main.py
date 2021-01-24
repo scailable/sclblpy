@@ -11,6 +11,14 @@ from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTask
 from sclblpy.version import __version__
 
 
+# main just prints a simple welcome message:
+def main():
+    print("\n*** Thanks for importing sclblpy! ***")
+    print("You can use the 'upload()' function to upload your models.")
+    print("To inspect your currently uploaded models, use `endpoints()`.")
+    print("Check the docs at https://pypi.org/project/sclblpy/ for more info. \n")
+
+
 # upload is a wrapper for upload_onnx and upload_sklearn to provide backwards compatibility:
 def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False) -> bool:
     """upload uploads a trained AI/ML model to Scailable.
