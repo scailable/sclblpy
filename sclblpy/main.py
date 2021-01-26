@@ -11,8 +11,10 @@ from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTask
 from sclblpy.version import __version__
 
 
-# main just prints a simple welcome message:
-def main():
+# welcome just prints a simple welcome message:
+def welcome():
+    """ Welcome simply prints a welcome message.
+    """
     print("\n*** Thanks for importing sclblpy! ***")
     print("You can use the 'upload()' function to upload your models.")
     print("To inspect your currently uploaded models, use `endpoints()`.")
