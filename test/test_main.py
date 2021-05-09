@@ -205,13 +205,13 @@ def test_run():
     """ Test running an endpoint
     Note: Only works with valid existing cfid and compatible fv.
     """
-    cfid = "78c48c52-944f-11ea-ade6-a4d18cd729d6"
+    cfid = "e871d8e5-b2e2-11ea-a47d-9600004e79cc"
 
-    fv = [7.4, 2.8, 6.1, 1.9]
+    fv = [1, 2]
 
     result = run(cfid, fv)
 
-    assert result is not False, "Error in running test; are the cfid and featurve_vector ok?"
+    assert result is not False, "Error in running test; are the cfid and feature_vector ok?"
     print(result)
 
     if result['statusCode'] == 1:
@@ -277,3 +277,4 @@ if __name__ == '__main__':
     print("===============================")
     print("All tests passed.")
     exit()
+
