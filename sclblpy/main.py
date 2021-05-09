@@ -71,8 +71,8 @@ def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False
     Raises  (in debug mode):
         UploadModelError if unable to successfully bundle and upload the model.
     """
-    if model_type is "sklearn":
-        if features is "":
+    if model_type == "sklearn":
+        if features == "":
             if not glob.SILENT:
                 print("FATAL: You cannot upload a sklearn model with an empty string as feature vector.")
             if glob.DEBUG:
@@ -80,7 +80,7 @@ def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False
             return False
         if not upload_sklearn(mod, features, docs, email, _keep):
             return False
-    elif model_type is "onnx":
+    elif model_type == "onnx":
         if not upload_onnx(mod, features, docs, email):
             return False
     else:
@@ -473,8 +473,8 @@ def update(mod, features, cfid, docs={}, email=True, model_type="sklearn", _keep
     Raises  (in debug mode):
         UploadModelError if unable to successfully bundle and upload the model.
     """
-    if model_type is "sklearn":
-        if features is "":
+    if model_type == "sklearn":
+        if features == "":
             if not glob.SILENT:
                 print("FATAL: You cannot upload a sklearn model with an empty string as feature vector.")
             if glob.DEBUG:
@@ -482,7 +482,7 @@ def update(mod, features, cfid, docs={}, email=True, model_type="sklearn", _keep
             return False
         if not update_sklearn(mod, features, cfid, docs=docs, email=email, _keep=_keep):
             return False
-    elif model_type is "onnx":
+    elif model_type == "onnx":
         if not update_onnx(mod, cfid, example=features, docs=docs, email=email):
             return False
     else:
@@ -1275,7 +1275,7 @@ def delete_device(did) -> bool:
 
 
 # run generates inference for a sklearn model
-def run(cfid, feature_vector) -> dict:
+def run(cfid, feature_vector, fv_type="auto") -> dict:
     """run a sklearn model that has previously been uploaded to Scailable.
 
     The run function allows a user to execute a sklearn task that has been uploaded to Scailable and
@@ -1314,7 +1314,9 @@ def run(cfid, feature_vector) -> dict:
     Args:
         cfid: String containing the compute-function ID of an existing Scailable endpoint
         feature_vector: The input for the compute-function
-            (i.e., the a single row of data X obtained using row = X[0,:])
+            (i.e., the a single row of data X obtained using row = X[0,:]).
+        fv_type: String indicating the type of input ("csv", "pb", or "raw"). Default is "auto".
+            (when set to "auto" the function will try to determine the input type).
 
 
     Returns:
@@ -1324,37 +1326,63 @@ def run(cfid, feature_vector) -> dict:
         RunTaskError if unable to run the compute function.
     """
 
+    # Check the cfid:
     if not cfid:
         if not glob.SILENT:
-            print("Please provide a valid cfid.")
+            print("Please provide a valid cfid. Abort.")
         return False
 
+    # Create the ednpoint url:
     url = glob.TASK_MANAGER_URL + "/task/" + cfid
 
-    # Create the input vector:
-    try:
-        data = ",".join(map(str, feature_vector))
-    except Exception as e:
+    # Determine the input vector type:
+    if fv_type == "auto":
+        fv_type = _check_input_type(feature_vector)
+
+    if not fv_type or fv_type not in ["csv", "pb", "raw"]:
         if not glob.SILENT:
-            print("We were unable to convert your feature_vector to a valid input string. " + str(e))
-        if glob.DEBUG:
-            raise RunTaskError("We were unable to convert your feature_vector to a valid input string. " + str(e))
+            print("Your feature_vector input type is invalid or cannot be determined. Abort.")
         return False
 
-    # Do the actual call:
-    try:
-        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":\"{\\\"input\\\": [[" + data + "]]}\"},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"},\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-        response = requests.request("POST", url, headers=headers, data=payload)
-    except Exception as e:
+    # Run:
+    response = ""
+    if fv_type == "csv":
+        try:
+            response = _run_csv(url, feature_vector)
+        except Exception as e:
+            if not glob.SILENT:
+                print("Run csv error: " + str(e))
+            if glob.DEBUG:
+                raise RunTaskError("Run csv error:" + str(e))
+            return False
+    elif fv_type == "raw":
+        try:
+            response = _run_raw(url, feature_vector)
+        except Exception as e:
+            if not glob.SILENT:
+                print("Run raw error: " + str(e))
+            if glob.DEBUG:
+                raise RunTaskError("Run raw error:" + str(e))
+            return False
+    elif fv_type == "pb":
+        try:
+            response = _run_pb(url, feature_vector)
+        except Exception as e:
+            if not glob.SILENT:
+                print("Run pb error: " + str(e))
+            if glob.DEBUG:
+                raise RunTaskError("Run pb error:" + str(e))
+            return False
+
+    # Check:
+    if response == "":
         if not glob.SILENT:
-            print("We were unable execute the call. " + str(e))
+            print("An error occurred while running, the response is empty.")
         if glob.DEBUG:
-            raise RunTaskError("We were unable to execute the call to our servers. " + str(e))
+            raise RunTaskError("An error occurred while running, the response is empty.")
         return False
 
+    # Parse:
     try:
         json_string = response.text
     except Exception as e:
@@ -1730,6 +1758,104 @@ def _toggle_debug_mode() -> bool:
         print("Debugging turned on.")
 
     return glob.DEBUG
+
+
+# _check_input_type
+def _check_input_type(fv):
+    """_check_input_type trie to determine the input type of the feature vector.
+
+    Utility used by run()
+    """
+    if isinstance(fv, list):
+        return "csv"
+    else:
+
+        # Parse to json
+        try:
+            js = json.loads(fv)
+        except Exception as e:
+            return False
+
+        # Get the type
+        try:
+            input_type = js.get("type", False)
+            if input_type in ["raw", "pb"]:
+                return input_type
+            else:
+                return False
+        except Exception as e:
+            return False
+
+
+def _run_csv(url, fv):
+    """ run an endpoint using csv input. """
+    # Create the input vector:
+    try:
+        data = ",".join(map(str, fv))
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable to convert your feature_vector to a valid input string. " + str(e))
+        if glob.DEBUG:
+            raise RunTaskError("We were unable to convert your feature_vector to a valid input string. " + str(e))
+        return False
+
+    # Do the actual call:
+    try:
+        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":\"{\\\"input\\\": [[" + data + "]]}\"},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"},\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable execute the call. " + str(e))
+        if glob.DEBUG:
+            raise RunTaskError("We were unable to execute the call to our servers. " + str(e))
+        return False
+
+    return response
+
+
+def _run_pb(url, fv):
+    """ run an endpoint using pb input. """
+    try:
+        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":" \
+                  + json.dumps(fv) + \
+                  "},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"}," \
+                  "\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable execute the call. " + str(e))
+        if glob.DEBUG:
+            raise RunTaskError("We were unable to execute the call to our servers. " + str(e))
+        return False
+
+    return response
+
+
+def _run_raw(url, fv):
+    """ run an endpoint using raw input. """
+    try:
+        payload = "{\"input\":{\"content-type\":\"json\",\"location\":\"embedded\",\"data\":" \
+                  + json.dumps(fv) + \
+                  "},\"output\":{\"content-type\":\"json\",\"location\":\"echo\"}," \
+                  "\"control\":1,\"properties\":{\"language\":\"WASM\"}}"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+    except Exception as e:
+        if not glob.SILENT:
+            print("We were unable execute the call. " + str(e))
+        if glob.DEBUG:
+            raise RunTaskError("We were unable to execute the call to our servers. " + str(e))
+        return False
+
+    return response
 
 
 # No command line options for this script:
