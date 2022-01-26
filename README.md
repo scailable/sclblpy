@@ -2,6 +2,11 @@
 
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
 
+
+DISCLAIMER: Sclblpy is undergoing changes, most notably we will focus on .onnx from now on, meaning sklearn and similar packages are no longer supported as well as the removal of the `run()` function.
+Expect unstable APIs!
+If you're the maintainer of a project and run into problems, feel free to send us a message at support@scailable.net
+
 `sclblpy` is the core python package provided by Scailable for interacting with our API. The scope of this package is (roughly):
 1. upload an `.onnx` model to the admin console
 2. Assign and deploy the uploaded model to a device that has previously been installed with the Scailable runtime and registered
@@ -169,7 +174,7 @@ the following packages:
 * `numpy`
 * `requests`
 * `uuid`
-* `sklearn`
+* `sklearn` (legacy, to be removed in future updates)
 
 No `onnx` packages are
 neccesary for the `sclblpy` package to run.
