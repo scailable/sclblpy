@@ -25,8 +25,8 @@ Also, there will probably be breaking changes in the API in one of the upcoming 
 - **Docs:**
    - On github (you are here): [https://github.com/scailable/sclblpy](https://github.com/scailable/sclblpy/blob/master/README.md)
    - On pypi: [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
-   - API docs Scailable (no explanation of what the stuff does): [https://docs.sclbl.net](https://docs.sclbl.net)
-- **Get an account (page does not mention accounts, link destination is the same as above):** [https://admin.sclbl.net/signup.html](https://admin.sclbl.net/signup.html) 
+   - API docs Scailable: [https://docs.sclbl.net](https://docs.sclbl.net)
+- **Get an account:** [https://admin.sclbl.net/signup.html](https://admin.sclbl.net/signup.html) 
 - **Install the AI manager:**
    - Locally: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager)
    - On an advantech device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals)
