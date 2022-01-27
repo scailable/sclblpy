@@ -3,9 +3,11 @@
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
 
 
-DISCLAIMER: Sclblpy is undergoing changes, most notably we will focus on .onnx from now on, meaning sklearn and similar packages are no longer supported as well as the removal of the `run()` function.
-Expect unstable APIs!
-If you're the maintainer of a project and run into problems, feel free to send us a message at support@scailable.net
+Changelog: the package is currently undergoing a major rework. We try to keep the below up to date, but some features might be stubs. 
+Most relevant is the removal of support for Scikit learn in favor of focussing fully on ONNX.
+1. Removal of support for additional packages - most importantly in the 'upload()' function which now will throw an error if `model_type` isn't onnx
+2. the `run()` function is going to be replaced by a function that allows the user to test their local setup; and as such is a stub
+
 
 `sclblpy` is the core python package provided by Scailable for interacting with our API. The scope of this package is (roughly):
 1. upload an `.onnx` model to the admin console
@@ -13,8 +15,7 @@ If you're the maintainer of a project and run into problems, feel free to send u
 3. (upcoming) test device deployment
 
 
-NOTE: the package is currently undergoing a major rework. We try to keep the below up to date, but some features might be stubs. 
-Most relevant is the removal of support for Scikit learn in favor of focussing fully on ONNX.
+
 
 Also, there will probably be breaking changes in the API in one of the upcoming releases.
 
@@ -28,7 +29,7 @@ Also, there will probably be breaking changes in the API in one of the upcoming 
    - API docs Scailable: [https://docs.sclbl.net](https://docs.sclbl.net)
 - **Get an account:** [https://admin.sclbl.net/signup.html](https://admin.sclbl.net/signup.html) 
 - **Install the AI manager:**
-   - Locally: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager)
+   - on any Linux device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager)
    - On an advantech device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals)
 
 ## Background
@@ -186,6 +187,6 @@ neccesary for the `sclblpy` package to run.
 the toolchain and user-management function. These are useful when running the Scailable stack locally. Also the method `_toggle_debug_mode()` can
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
 * Docs generated using `pdoc --html --html-dir docs sclblpy/main.py`
-
+* We are actively developing our stack; we try to list changes from one version to the next as clearly as possible. If you find any errors or issues please add an issue to this repo."
 If you are having trouble using the `sclblpy` package, please [submit an issue to our github](https://github.com/scailable/sclblpy/issues/new), 
 we will try to fix it as quickly as possible!
