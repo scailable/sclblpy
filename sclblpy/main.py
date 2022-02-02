@@ -22,7 +22,7 @@ def welcome():
 
 
 # upload is a wrapper for upload_onnx and upload_sklearn to provide backwards compatibility:
-def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False) -> bool:
+def upload(mod, features, docs={}, email=True, model_type="onnx", _keep=False) -> bool:
     """upload uploads a trained AI/ML model to Scailable.
 
     The upload function is the main workhorse of the sclblpy package but effectively provides a
@@ -72,14 +72,7 @@ def upload(mod, features, docs={}, email=True, model_type="sklearn", _keep=False
         UploadModelError if unable to successfully bundle and upload the model.
     """
     if model_type == "sklearn":
-        if features == "":
-            if not glob.SILENT:
-                print("FATAL: You cannot upload a sklearn model with an empty string as feature vector.")
-            if glob.DEBUG:
-                raise UploadModelError("Cannot upload sklearn model with empty string as feature vector.")
-            return False
-        if not upload_sklearn(mod, features, docs, email, _keep):
-            return False
+        raise UploadModelError("sklearn is no longer supported. Please use .onnx. In urgent cases, get in contact with us at support@scailable.net")
     elif model_type == "onnx":
         if not upload_onnx(mod, features, docs, email):
             return False
