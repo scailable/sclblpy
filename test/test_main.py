@@ -1,19 +1,11 @@
-import os
 import time
 
-from sclblpy._bundle import _gzip_load, _gzip_delete
 from sclblpy._jwt import _get_user_details
-from sclblpy.main import remove_credentials, upload, endpoints, delete_endpoint, _set_toolchain_URL, \
-    _set_usermanager_URL, list_models, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
+from sclblpy.main import remove_credentials, upload_onnx, endpoints, delete_endpoint, _set_toolchain_URL, \
+    _set_usermanager_URL, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
     _set_taskmanager_URL, models, devices, delete_device, assignments, assign, delete_assignment, delete_model
 
-import sclblpy._globals as glob
 
-import numpy as np
-from sklearn import svm
-from sklearn import datasets
-
-# Script settings:
 RUN_TESTS = False  # Prevent unintended testing
 DEBUG = True  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
@@ -22,45 +14,27 @@ TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
 TASKMANAGER_URL = "http://localhost:8080"
 
 
-def test_upload():
+def test_upload_onnx():
     """ Test the upload function (sklearn and onnx"""
-
-    # Start fitting a simple model, no feature vecto
-    clf = svm.SVC()
-    X, y = datasets.load_iris(return_X_y=True)
-    clf.fit(X, y)
-    assert upload(clf, np.empty(0)) is False, "No valid feature vector."
-
     # Add docs
     docs = {}
-    docs['name'] = "Name of model"
-    docs['documentation'] = "A long .md thing...."
-    assert upload(clf, np.empty(0), docs=docs) is False, "No valid feature vector."
-
-    # Valid
-    row = X[130, :]
-    assert upload(clf, row, docs=docs) is True, "SKlearn upload test failed."
 
     # ONNX
     docs['name'] = "Name of ONNX model"
     docs['documentation'] = "A long .md thing...."
-    check = upload("../test/files/model.onnx", "", docs, model_type="onnx")
+    check = upload_onnx("../test/files/model.onnx", "", docs)
     assert check is True, "ONNX upload test failed."
 
 
 def test_update():
     """ Test the update function (sklearn & onnx"""
 
-    # Start fitting a simple model, no feature vecto
-    clf = svm.SVC()
-    X, y = datasets.load_iris(return_X_y=True)
-    clf.fit(X, y)
+
 
     # Add and feature vector
     docs = {}
     docs['name'] = "Name of model - UPDATED"
     docs['documentation'] = "A long .md thing.... UPDATED"
-    row = X[130, :]
 
     # Get an existing endpoint to update
     try:
@@ -68,19 +42,6 @@ def test_update():
     except Exception as e:
         print("No endpoint to overwrite found")
         assert False is True, "No endpoint found for overwrite test."
-
-    print("Updating: " + cfid)
-
-    # Overwrite without docs
-    result = update(clf, row, cfid, docs={})
-    assert result is True, "Sklearn update failed."
-
-    # Get another endpoint to update
-    try:
-        cfid = endpoints(_verbose=False, _return=True)[1]["cfid"]
-    except Exception as e:
-        print("No endpoint to overwrite found 2")
-        assert False == True, "no endpoint found for overwrite test 2"
 
     print("Updating: " + cfid)
 
@@ -200,22 +161,7 @@ def test_devices_functions():
     assert (count2 == (count-1)) is True, "The deleted device count is not correct."
 
 
-# More obscure tests / please read docstrings and make sure settings are correct.
-def test_run():
-    """ Test running an endpoint
-    Note: Only works with valid existing cfid and compatible fv.
-    """
-    cfid = "e871d8e5-b2e2-11ea-a47d-9600004e79cc"
 
-    fv = [1, 2]
-
-    result = run(cfid, fv)
-
-    assert result is not False, "Error in running test; are the cfid and feature_vector ok?"
-    print(result)
-
-    if result['statusCode'] == 1:
-        print(result['result'])
 
 
 def test_remove_credentials():  # Also tested in JWT.
@@ -231,12 +177,6 @@ def test_setting_URLs():
     _set_taskmanager_URL(TASKMANAGER_URL)
 
 
-def test_user_utils():
-    start_print()
-    list_models()
-    stop_print()
-    list_models()
-    start_print()
 
 
 # Run tests
@@ -258,7 +198,7 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
-    test_upload()  # upload sklearn and onnx test
+    test_upload_onnx()  # upload sklearn and onnx test
 
     print("Wait, toolchain needs to finish....")
     time.sleep(10)
