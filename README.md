@@ -3,8 +3,7 @@
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
 
 
-Changelog: the package is currently undergoing a major rework. We try to keep the below up to date, but some features might be stubs. 
-Most relevant is the removal of support for Scikit learn in favor of focussing fully on ONNX.
+Changelog: the package is currently being refactored. As such, it is currently a stub, aas Scailable has changed its focus from Scikit Learn to ONNX, Scikit Learn support has been removed. 
 1. Removal of support for additional packages - most importantly in the 'upload()' function which now will throw an error if `model_type` isn't onnx
 2. the `run()` function is going to be replaced by a function that allows the user to test their local setup; and as such is a stub
 
@@ -17,20 +16,20 @@ Most relevant is the removal of support for Scikit learn in favor of focussing f
 
 
 
-Also, there will probably be breaking changes in the API in one of the upcoming releases.
+Also, there will probably be breaking changes in the API in one of the upcoming releases, for more information see [our API documentation](https://docs.sclbl.net/).
 
 
 `sclblpy` is only functional in combination with a valid Scailable user account.
 
 - **Website:** [https://www.scailable.net](https://www.scailable.net)
 - **Docs:**
-   - On github (you are here): [https://github.com/scailable/sclblpy](https://github.com/scailable/sclblpy/blob/master/README.md)
+   - On GitHub (you are here): [https://github.com/scailable/sclblpy](https://github.com/scailable/sclblpy/blob/master/README.md)
    - On pypi: [https://docs.sclbl.net/sclblpy](https://docs.sclbl.net/sclblpy)
    - API docs Scailable: [https://docs.sclbl.net](https://docs.sclbl.net)
 - **Get an account:** [https://admin.sclbl.net/signup.html](https://admin.sclbl.net/signup.html) 
 - **Install the AI manager:**
-   - on any Linux device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager)
-   - On an advantech device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals)
+   - On any Linux device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals/sclbl-local-ai-manager)
+   - On an Advantech device: [https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals](https://github.com/scailable/sclbl-tutorials/tree/master/solutions-manuals)
 
 ## Background
 The sclblpy package allows users with a valid scailable account (get one at [https://admin.sclbl.net/signup.html](https://admin.sclbl.net/signup.html)) 
@@ -38,7 +37,7 @@ to upload fitted ML / AI models to the Scailable toolchain server. This will res
 
 1. The model being tested for errors on the client side.
 2. The model being uploaded to Scailable, tested again, and if all test pass it will be converted to [WebAssembly](https://webassembly.org).
-3. The model being made available to deploy to a pre-regsitered (link on how to do that) device
+3. The model being made available to deploy to a preregistered (link on how to do that) device
 4. (upcoming) The model being testable through test_run(example_input, device_id)
 
 ## Getting started
@@ -178,7 +177,7 @@ the following packages:
 * `sklearn` (legacy, to be removed in future updates)
 
 No `onnx` packages are
-neccesary for the `sclblpy` package to run.
+necessary for the `sclblpy` package to run.
 
 ## Notes:
 

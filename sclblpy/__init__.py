@@ -9,7 +9,7 @@ if sys.version_info < (3, 0):
     sys.exit(1)
 
 from .main import welcome, \
-    upload, upload_sklearn, upload_onnx, update, update_sklearn, update_onnx, update_docs, \
+    upload_onnx, update_onnx, update_docs, \
     endpoints, delete_endpoint, models, delete_model, \
     devices, delete_device, assignments, assign, delete_assignment, \
     run, remove_credentials, list_models, \
