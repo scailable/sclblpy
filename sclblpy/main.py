@@ -5,8 +5,7 @@ import requests
 import sclblpy._globals as glob
 from sclblpy._bundle import _gzip_save, _gzip_delete
 from sclblpy._jwt import _check_jwt, _remove_credentials
-from sclblpy._utils import _get_model_name, _get_system_info, _predict, _get_model_package, _load_supported_models, \
-    _check_model
+from sclblpy._utils import  _get_system_info
 from sclblpy.errors import UserManagerError, JWTError, UploadModelError, RunTaskError, CreateAssignmentError
 from sclblpy.version import __version__
 
@@ -1150,22 +1149,6 @@ def start_print() -> bool:
     glob.SILENT = False
     return True
 
-
-# list_models lists all supported sklearn models
-def list_models() -> dict:
-    """Print or return a list of all supported models.
-
-    Returns:
-        A dictionary detailing the supported models
-    """
-    if not glob.SUPPORTED_MODELS:
-        _load_supported_models()
-
-    if not glob.SILENT:
-        print("Currently supported models:")
-        print(json.dumps(glob.SUPPORTED_MODELS, sort_keys=True, indent=4))
-
-    return glob.SUPPORTED_MODELS
 
 
 # _set_toolchain_URL sets the location of the toolchain (for local testing)

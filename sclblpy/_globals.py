@@ -15,7 +15,6 @@ DEBUG: bool = False  # Boolean indicating whether using the package in debug mod
 dirs = AppDirs("sclblpy", "sclbl")
 USER_CREDENTIALS: str = dirs.user_config_dir + "/.creds.json"  # Location of json file to store user credentials
 GZIP_BUNDLE: str = dirs.user_data_dir + "/model_bundle.gzip"  # Location where a save model is (temporarily) stored
-MODELS_JSON: str = os.path.dirname(os.path.realpath(__file__)) + "/supported_models.json"  # Location of the json with supported models
 
 # JWT necessities:
 JWT_TOKEN: str = ""  # JWT token.
