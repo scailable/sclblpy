@@ -2,7 +2,7 @@ import time
 
 from sclblpy._jwt import _get_user_details
 from sclblpy.main import remove_credentials, upload_onnx, endpoints, delete_endpoint, _set_toolchain_URL, \
-    _set_usermanager_URL, start_print, stop_print, _toggle_debug_mode, update, update_docs, run, \
+    _set_usermanager_URL, update_onnx, stop_print, _toggle_debug_mode, update_docs, run, \
     _set_taskmanager_URL, models, devices, delete_device, assignments, assign, delete_assignment, delete_model
 
 
@@ -46,7 +46,7 @@ def test_update():
     print("Updating: " + cfid)
 
     # Overwrite with valid docs:
-    result = update("../test/files/model.onnx", "", cfid, docs=docs, model_type="onnx")
+    result = update_onnx("../test/files/model.onnx", "", cfid, docs=docs, model_type="onnx")
     assert result is True, "ONNX update failed."
 
 
