@@ -9,12 +9,12 @@ from sclblpy.main import _toggle_debug_mode
 RUN_TESTS = False  # Prevent unintended testing
 DEBUG = False  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
-ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
-TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
+ADMIN_URL = "http://localhost"  # Location of admin for this test
+TOOLCHAIN_URL = "http://localhost"  # Location of toolchain for this test
 
 # For the tests to pass we need a valid username and password:
-USERNAME = "maurits@mauritskaptein.com"
-PASSWORD = "test"
+USERNAME = "enter-valid-user-email"
+PASSWORD = "enter-valid-password"
 
 
 def test_JWT():

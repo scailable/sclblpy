@@ -6,12 +6,11 @@ from sclblpy.main import remove_credentials, upload_onnx, endpoints, delete_endp
     _set_taskmanager_URL, models, devices, delete_device, assignments, assign, delete_assignment, delete_model
 
 
-RUN_TESTS = False  # Prevent unintended testing
+RUN_TESTS = True  # Prevent unintended testing
 DEBUG = True  # Set to debug mode; if true it will raise exceptions
 PRINTING = True  # Toggle printing on and off.
-ADMIN_URL = "http://localhost:8008"  # Location of admin for this test
-TOOLCHAIN_URL = "http://localhost:8010"  # Location of toolchain for this test
-TASKMANAGER_URL = "http://localhost:8080"
+ADMIN_URL = "https://usermanager.sclbl.net"  # Location of admin for this test
+TOOLCHAIN_URL = "https://toolchain.sclbl.net"  # Location of toolchain for this test
 
 
 def test_upload_onnx():
@@ -37,6 +36,9 @@ def test_update():
     docs['documentation'] = "A long .md thing.... UPDATED"
 
     # Get an existing endpoint to update
+    print(endpoints)
+
+    # try except is a bit unusual in a test (as any fail in e.g. endpoints or the indexing will lead to the same output)
     try:
         cfid = endpoints(_verbose=False, _return=True)[0]["cfid"]
     except Exception as e:
@@ -46,7 +48,7 @@ def test_update():
     print("Updating: " + cfid)
 
     # Overwrite with valid docs:
-    result = update_onnx("../test/files/model.onnx", "", cfid, docs=docs, model_type="onnx")
+    result = update_onnx("../test/files/model.onnx", cfid=cfid,example="", docs=docs) #
     assert result is True, "ONNX update failed."
 
 
@@ -174,7 +176,6 @@ def test_setting_URLs():
     """ Test url setters: """
     _set_toolchain_URL(TOOLCHAIN_URL)
     _set_usermanager_URL(ADMIN_URL)
-    _set_taskmanager_URL(TASKMANAGER_URL)
 
 
 
@@ -202,11 +203,17 @@ if __name__ == '__main__':
 
     print("Wait, toolchain needs to finish....")
     time.sleep(10)
+    print(" waited for 10 seconds")
 
+    print('testing update \n\n')
     test_update()  # update sklearn and onnx test
+    print('testing update docs \n\n')
     test_update_docs()  # update only docs test
+    print('testing assign functions \n\n')
     test_assign_functions()  # test creating and removing assignments
+    print('testing endpoint functions \n\n')
     test_endpoints_functions()  # test getting and deleting models
+    print('testing device functions \n\n')
     test_devices_functions()  # test device get and delete
 
     # More obscure tests, not run by default / commented out
