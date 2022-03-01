@@ -131,7 +131,7 @@ def upload_onnx(path, example="", docs={}, email=True) -> bool:
         except Exception as e:
             if not glob.SILENT:
                 print("FATAL: Unable to carry out the upload request: the toolchain is not available. \n"
-                      "Your model has not been uploaded. \n")
+                      "Your model has not been uploaded. PLACE 1 URL: {url}\n")
             if glob.DEBUG:
                 raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
             return False
@@ -287,8 +287,8 @@ def update_onnx(path, cfid, example="", docs={}, email=True) -> bool:
             response = requests.put(url, headers=headers, data=payload, files=files)
         except Exception as e:
             if not glob.SILENT:
-                print("FATAL: Unable to carry out the update request: the toolchain is not available. \n"
-                      "Your model has not been updated. \n")
+                print(f"FATAL: Unable to carry out the update request: the toolchain is not available. \n"
+                      f"Your model has not been updated. {url}, user id: {glob.JWT_USER_ID}, cfid:  {cfid}\n")
             if glob.DEBUG:
                 raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
             return False
@@ -345,6 +345,7 @@ def update_docs(cfid, docs) -> bool:
     """
 
     # check the docs:
+    print(docs)
     name = docs.get('name', "")
     if name == "":
         print("FATAL: Please make sure to add a name to your documentation (using the 'name') field \n"
@@ -394,8 +395,9 @@ def update_docs(cfid, docs) -> bool:
             response = requests.put(url, headers=headers, data=payload, files=files)
         except Exception as e:
             if not glob.SILENT:
-                print("FATAL: Unable to carry out the upload request: the toolchain is not available. \n"
-                      "Your model documentation has not been updated. \n")
+                print(f"FATAL: Unable to carry out the upload request: the toolchain is not available. \n"
+                      "Your model documentation has not been updated. PLACE 2 URL: {url} \n")
+                print(url)
             if glob.DEBUG:
                 raise UploadModelError("We were unable to obtain JWT authorization: " + str(e))
             return False

@@ -216,6 +216,9 @@ if __name__ == '__main__':
     print('testing device functions \n\n')
     test_devices_functions()  # test device get and delete
 
+
+    ## MISSSING: REMOVE THE CREATED MODELS!!!
+
     # More obscure tests, not run by default / commented out
     #test_user_utils()
     #test_remove_credentials()
