@@ -28,22 +28,20 @@ def test_upload_onnx():
 def test_update():
     """ Test the update function (sklearn & onnx"""
 
-
-
     # Add and feature vector
     docs = {}
     docs['name'] = "Name of model - UPDATED"
     docs['documentation'] = "A long .md thing.... UPDATED"
 
     # Get an existing endpoint to update
-    print(endpoints)
+    print(endpoints(_verbose=False, _return=True))
 
     # try except is a bit unusual in a test (as any fail in e.g. endpoints or the indexing will lead to the same output)
-    try:
-        cfid = endpoints(_verbose=False, _return=True)[0]["cfid"]
-    except Exception as e:
-        print("No endpoint to overwrite found")
-        assert False is True, "No endpoint found for overwrite test."
+    #try:
+    cfid = endpoints(_verbose=False, _return=True)[0]["cfid"]
+    #except Exception as e:
+    #    print("No endpoint to overwrite found")
+    #    assert False is True, "No endpoint found for overwrite test."
 
     print("Updating: " + cfid)
 
@@ -126,16 +124,6 @@ def test_endpoints_functions():
     if cfid:
         assert delete_endpoint(cfid) is True, "Should be able to delete an endpoint."
 
-    # delete model
-    ep = endpoints(_return=True)
-    try:
-        cfid = ep[0]['cfid']
-    except Exception as e:
-        # Effectively there was no model...
-        print("No endpoints to remove; test not run.")
-
-    if cfid:
-        assert delete_model(cfid) is True, "Should be able to delete a model."
 
 
 def test_devices_functions():
@@ -202,7 +190,7 @@ if __name__ == '__main__':
     test_upload_onnx()  # upload sklearn and onnx test
 
     print("Wait, toolchain needs to finish....")
-    time.sleep(10)
+    time.sleep(25)
     print(" waited for 10 seconds")
 
     print('testing update \n\n')
@@ -211,10 +199,16 @@ if __name__ == '__main__':
     test_update_docs()  # update only docs test
     print('testing assign functions \n\n')
     test_assign_functions()  # test creating and removing assignments
+
+
+    # The test below deletes the device registration, so it's commented out to keep the tests repeatable
+
     print('testing endpoint functions \n\n')
+    print(endpoints(_return=True))
     test_endpoints_functions()  # test getting and deleting models
-    print('testing device functions \n\n')
-    test_devices_functions()  # test device get and delete
+
+    #print('testing device functions \n\n')
+    #test_devices_functions()  # test device get and delete
 
 
     ## MISSSING: REMOVE THE CREATED MODELS!!!
