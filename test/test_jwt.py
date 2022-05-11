@@ -6,15 +6,15 @@ from sclblpy.errors import JWTError
 from sclblpy.main import _toggle_debug_mode
 
 # Script settings:
-RUN_TESTS = False  # Prevent unintended testing
-DEBUG = False  # Set to debug mode; if true it will raise exceptions
-PRINTING = True  # Toggle printing on and off.
-ADMIN_URL = "http://localhost"  # Location of admin for this test
-TOOLCHAIN_URL = "http://localhost"  # Location of toolchain for this test
+RUN_TESTS = 1  # Prevent unintended testing
+DEBUG = 0  # Set to debug mode; if true it will raise exceptions
+PRINTING = 1  # Toggle printing on and off.
+ADMIN_URL = "https://usermanager.sclbl.net"  # Location of admin for this test
+TOOLCHAIN_URL = "https://toolchain.sclbl.net"  # Location of toolchain for this test
 
-# For the tests to pass we need a valid username and password:
-USERNAME = "enter-valid-user-email"
-PASSWORD = "enter-valid-password"
+# For the tests to pass we need a valid email and password:
+EMAIL = "email-here"
+PASSWORD = "password-here"
 
 
 def test_JWT():
@@ -39,19 +39,19 @@ def test_signin():
     """Test __signin() function"""
 
     # Try empty
-    username: str = ""
+    email: str = ""
     password: str = ""
-    assert _sign_in(username, password) is False, "This should not log in"
+    assert _sign_in(email, password) is False, "This should not log in"
 
     # Try invalid
-    username = "blabla@blabla.com"
+    email = "blabla@blabla.com"
     password = "not-a-valid-password"
-    assert _sign_in(username, password) is False, "This should not log in 2"
+    assert _sign_in(email, password) is False, "This should not log in 2"
 
     # Try valid
-    username = USERNAME
+    email = EMAIL
     password = PASSWORD
-    assert _sign_in(username, password) is True, "This should sign in (if the username and pass indeed exist)."
+    assert _sign_in(email, password) is True, "This should sign in (if the email and pass indeed exist)."
 
 
 def test_get_user_details():
