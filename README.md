@@ -3,7 +3,7 @@
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
 
 
-Changelog: the package is currently being refactored. As such, it is currently a stub, aas Scailable has changed its focus from Scikit Learn to ONNX, Scikit Learn support has been removed. 
+Changelog: the package is currently being refactored. As such, it is currently a stub, as Scailable has changed its focus from Scikit Learn to ONNX, Scikit Learn support has been removed.
 1. Removal of support for additional packages - most importantly in the 'upload()' function which now will throw an error if `model_type` isn't onnx
 2. the `run()` function is going to be replaced by a function that allows the user to test their local setup; and as such is a stub
 
@@ -44,33 +44,31 @@ to upload fitted ML / AI models to the Scailable toolchain server. This will res
 
 The following functions are likely most used:
 
-### `sp.upload()` can be used to create model:
+### `sp.upload_onnx()` can be used to create model:
 ```python
-def upload(mod, features, docs={}, email=True, _keep=False) -> bool:
-    """upload uploads a trained AI/ML model to Scailable.
+def upload_onnx(path, example="", docs={}, email=True) -> bool:
+    """upload_onnx uploads a fitted onnx model to Scailable.
 
-    The upload function is the main workhorse of the sclblpy package but effectively provides a
-    wrapper to choose between the
-     - upload_sklearn(mod, feature_vector, docs={}, email=True, _keep=False)
-     - upload_onnx(path, docs={}, email=True)
-    functions.
+    - The function first checks if the supplied path indeed references a .onnx file
+    - Next, the docs are checked; if none are provided a warning is issued and a simple
+    name is provided based on the model type.
+    - Finally the onnx file and the supporting docs are uploaded to the toolchain.
 
-    The function checks the type, and if type = "sklearn" (default) calls the upload_sklearn() function.
-    If type = "onnx" it calls the upload_onnx() function.
+    Note: This method prints user-feedback by default. This feedback can be suppressed by calling the
+        stop_print() method.
 
     Args:
-        mod: The model to be uploaded (type="sklearn" OR the path to the stored ONNX file (type="onnx").
-        features:
-            - An example feature_vector for your model (type="sklearn" only).
-            (i.e., the first row of your training data X obtained using row = X[0,:])
-            - The input str (binary) to the onnx model (type="onnx" only). Can be an empty string.
+        path: The path referencing the onnx model location (i.e., the .onnx file location).
+        example: String example input for the onnx file.
         docs: A dict{} containing the fields 'name' and 'documentation'.
         email: Bool indicating whether a confirmation email of a successful conversion should be send. Default True.
-        model_type: String indicating the type of model. Currently with options "sklearn" or "onnx". Default "sklearn"
-        _keep: Bool indicating whether the .gzipped file should be retained (type="sklearn" only). Default False.
 
     Returns:
-        False if upload failed, true otherwise"""
+        False if upload failed, true otherwise
+
+    Raises  (in debug mode):
+        UploadModelError if unable to successfully bundle and upload the model.
+    """
 ```
 `sp.models()` lists all created models, and `sp.delete_model()` can be used to delete a model. Finally, `sp.update()` can be used to
 overwrite / update an existing model.
@@ -103,14 +101,13 @@ The following code can be used to upload a stored `.onnx` model:
 docs = {}
 docs['name'] = "Name of ONNX model"
 docs['documentation'] = "A long .md thing...."
-check = sp.upload("PATH-TO-MODEL/FILE-NAME.onnx", "", docs, model_type="onnx")
+check = upload_onnx("PATH-TO-MODEL/FILE-NAME.onnx", "", docs, email=True)
 ```
 
-Note that the file will be send to the Scailable platform; after it has been transpiled to WebAssembly you will receive 
-(by default) and email.
+Note that the file will be send to the Scailable platform; after it has been transpiled to WebAssembly you will receive an email (by default), but you can choose not to, by setting ``email=False``
 
 ## Additional functionality
-Next to the main ``upload()`` function, the package also exposes the following functions to administer endpoints:
+Next to the main ``upload_onnx()`` function, the package also exposes the following functions to administer endpoints:
 
 ````
 # List all models owned by the current user:
@@ -174,7 +171,6 @@ the following packages:
 * `numpy`
 * `requests`
 * `uuid`
-* `sklearn` (legacy, to be removed in future updates)
 
 No `onnx` packages are
 necessary for the `sclblpy` package to run.
