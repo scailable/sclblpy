@@ -8,9 +8,9 @@ from sclblpy.main import _toggle_debug_mode, stop_print
 
 
 # Script settings:
-RUN_TESTS = False  # Prevent unintended testing
-DEBUG = False  # Set to debug mode; if true it will raise exceptions
-PRINTING = True  # Toggle printing on and off.
+RUN_TESTS = 1  # Prevent unintended testing
+DEBUG = 1  # Set to debug mode; if true it will raise exceptions
+PRINTING = 1  # Toggle printing on and off.
 
 def test_get_system_info():
     """ Test get system info """

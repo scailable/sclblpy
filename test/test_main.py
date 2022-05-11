@@ -14,7 +14,7 @@ TOOLCHAIN_URL = "https://toolchain.sclbl.net"  # Location of toolchain for this 
 
 
 def test_upload_onnx():
-    """ Test the upload function (sklearn and onnx"""
+    """ Test the upload function (onnx)"""
     # Add docs
     docs = {}
 
@@ -26,7 +26,7 @@ def test_upload_onnx():
 
 
 def test_update():
-    """ Test the update function (sklearn & onnx"""
+    """ Test the update function (onnx)"""
 
     # Add and feature vector
     docs = {}
@@ -187,14 +187,14 @@ if __name__ == '__main__':
     print("Running simple functional tests of main.py")
     print("===============================")
 
-    test_upload_onnx()  # upload sklearn and onnx test
+    test_upload_onnx()  # upload an onnx test
 
     print("Wait, toolchain needs to finish....")
     time.sleep(25)
-    print(" waited for 10 seconds")
+    print(" waited for 25 seconds")
 
     print('testing update \n\n')
-    test_update()  # update sklearn and onnx test
+    test_update()  # update an onnx test
     print('testing update docs \n\n')
     test_update_docs()  # update only docs test
     print('testing assign functions \n\n')
