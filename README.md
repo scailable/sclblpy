@@ -181,7 +181,7 @@ necessary for the `sclblpy` package to run.
 * The methods `_set_toolchain_URL(string)` and `_set_usermanager_URL(string)` can be used to change the default location of
 the toolchain and user-management function. These are useful when running the Scailable stack locally. Also the method `_toggle_debug_mode()` can
 be used for troubleshooting (this will raise exceptions and provide a trace upon errors).
-* Docs generated using `pdoc --html --html-dir docs sclblpy/main.py`
+* Docs generated using `pdoc3 --force --html --output-dir docs sclblpy/main.py`
 * We are actively developing our stack; we try to list changes from one version to the next as clearly as possible. If you find any errors or issues please add an issue to this repo."
 If you are having trouble using the `sclblpy` package, please [submit an issue to our github](https://github.com/scailable/sclblpy/issues/new), 
 we will try to fix it as quickly as possible!
