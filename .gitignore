@@ -144,3 +144,10 @@ example.py
 example2.py
 example3.py
 test_all_models.py
+
+
+#jupyter stuff
+.ipynb_checkpoints
+
+# .onnx models
+*.onnx

@@ -4,9 +4,9 @@ from sclblpy._bundle import _gzip_save, _gzip_load, _gzip_delete
 # Script settings:
 from sclblpy.main import _toggle_debug_mode, stop_print
 
-RUN_TESTS = False  # Prevent unintended testing
-DEBUG = False  # Set to debug mode; if true it will raise exceptions
-PRINTING = False  # Toggle printing on and off.
+RUN_TESTS = 1  # Prevent unintended testing
+DEBUG = 1  # Set to debug mode; if true it will raise exceptions
+PRINTING = 1  # Toggle printing on and off.
 
 def test_gzip_save():
     """Test gzip save. """

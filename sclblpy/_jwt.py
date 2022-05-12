@@ -20,8 +20,8 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280) -> bool:
 
     Note, if no JWT string is present, or the JWT string has expired,
     the function tries to
-    a. Read username and pass from file
-    b. Prompt user for username and pass
+    a. Read email and pass from file
+    b. Prompt user for email and pass
     and subsequently sign in.
 
     Args:
@@ -41,7 +41,7 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280) -> bool:
     if not glob.JWT_TOKEN or glob.JWT_TIMESTAMP < time_renew:
         user_details: dict = _get_user_details()
         try:
-            if _sign_in(user_details['username'], user_details['password']):
+            if _sign_in(user_details['email'], user_details['password']):
                 return True
             else:
                 return False
@@ -73,15 +73,15 @@ def _check_jwt(seconds_refresh=120, seconds_renew=280) -> bool:
         return False
 
 
-def _sign_in(username: str, password: str, _remove_file=True) -> bool:
+def _sign_in(email: str, password: str, _remove_file=True) -> bool:
     """Performs the sign in of a user.
 
     The function sign in performs a sign in of a user based
-    on the username (str) and password (str). It returns
+    on the email (str) and password (str). It returns
     a boolean value indicating whether the sign in was successful.
 
     Args:
-        username: A string (email) to login the user
+        email: A string (email) to login the user
         password: A string (password for login
         _remove_file: A bool indicating if the credentials should be removed on failed login. Default True.
 
@@ -91,16 +91,16 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
     Raises:
         LoginError: if unable to login.
     """
-    if len(username) < 1 or len(password) < 1:
+    if len(email) < 1 or len(password) < 1:
         if not glob.SILENT:
-            print("JWT error: no username and password provided.")
+            print("JWT error: no email and password provided.")
         if glob.DEBUG:
-            raise LoginError("No username or password provided.")
+            raise LoginError("No email or password provided.")
         return False
 
     url: str = glob.USER_MANAGER_URL + "/user/signin/"
     data: dict = {
-        'email': username,
+        'email': email,
         'pwd': password
     }
     headers: dict = {
@@ -161,11 +161,11 @@ def _sign_in(username: str, password: str, _remove_file=True) -> bool:
 
 
 def _get_user_details() -> dict:
-    """Gets the username and password from a user.
+    """Gets the email and password from a user.
 
     Function tries to
-    a. Retrieve username and password from .creds.json file.
-    b. Retrieve username and password by prompting the user.
+    a. Retrieve email and password from .creds.json file.
+    b. Retrieve email and password by prompting the user.
 
     If user responds 'y' to prompt to save the function we will store the user credentials.
 
@@ -173,7 +173,7 @@ def _get_user_details() -> dict:
 
     Returns:
         A dict containing the fields
-            'username' String
+            'email' String
             'password' String
 
     Raises (in debug mode):
@@ -188,12 +188,12 @@ def _get_user_details() -> dict:
     except FileNotFoundError:
         pass
 
-    username: str = input("Please provide your username: ")
+    email: str = input("Please provide your email: ")
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', GetPassWarning)
         password = getpass('Please type your password: ')
 
-    details['username'] = username
+    details['email'] = email
     details['password'] = password
 
     while True:
@@ -305,7 +305,7 @@ def _remove_credentials():
             return False
         if not glob.SILENT:
             print("Your stored user credentials have been removed. \n"
-                  "You will have to re-enter your username and password next time.")
+                  "You will have to re-enter your email and password next time.")
 
         return True
     else:
