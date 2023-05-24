@@ -11,10 +11,11 @@ setuptools.setup(
     version=__version__,
     author="Maurits Kaptein",
     author_email="maurits.kaptein@scailable.net",
-    description="Python package for uploading onnx models to Scailable toolchain.",
+    description="Python package for interacting with our API.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     include_package_data=True,
+	package_data={'': ['glob.json']},
     url="https://github.com/scailable/sclblpy/",
     packages=setuptools.find_packages(),
     classifiers=[
@@ -23,9 +24,8 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'numpy',
         'requests',
-        'uuid',
+        'pyjwt',
       ],
     python_requires='>=3.7',
 )
