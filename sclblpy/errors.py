@@ -1,8 +1,27 @@
 # Custom errors for the sclblpy package.
 
-
 class LoginError(Exception):
     """ Login error """
+    pass
+
+
+class LogoutError(Exception):
+    """ Logout error """
+    pass
+
+
+class RegisterError(Exception):
+    """ Register error """
+    pass
+
+
+class PwdError(Exception):
+    """ Pwd error """
+    pass
+
+
+class UserDetailsError(Exception):
+    """ User Details error """
     pass
 
 
@@ -11,38 +30,28 @@ class JWTError(Exception):
     pass
 
 
-class ModelSupportError(Exception):
-    """ Model support error """
+class CatalogueError(Exception):
+    """ Catalogue error """
     pass
 
 
-class ModelBundleError(Exception):
-    """ Model pickle / gzip error """
+class ConfigError(Exception):
+    """ Config error """
     pass
 
 
-class UserManagerError(Exception):
-    """ User manager error """
+class ModelError(Exception):
+    """ Model error """
     pass
 
 
-class GeneratePredictionError(Exception):
-    """ Prediction error """
+class DeviceError(Exception):
+    """ Device error """
     pass
 
 
-class UploadModelError(Exception):
-    """ Upload model error """
-    pass
-
-
-class CreateAssignmentError(Exception):
-    """ CreateAssignment error """
-    pass
-
-
-class RunTaskError(Exception):
-    """ Run task error"""
+class GroupError(Exception):
+    """ Group error """
     pass
 
 
