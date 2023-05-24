@@ -1,5 +1,7 @@
 # sclblpy
 
+[![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
+
 `sclblpy` is the core python package provided by Scailable for interacting with our API. 
 
 `sclblpy` is only functional in combination with a valid Scailable user account.
