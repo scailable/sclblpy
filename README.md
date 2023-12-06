@@ -1,6 +1,7 @@
 # sclblpy
 
 [![PyPI Release](https://github.com/scailable/sclblpy/workflows/PyPI%20Release/badge.svg)](https://pypi.org/project/sclblpy/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fscailable%2Fsclblpy.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fscailable%2Fsclblpy?ref=badge_shield)
 
 `sclblpy` is the core python package provided by Scailable for interacting with our API. 
 
@@ -155,3 +156,7 @@ def assign_model_to_device(uuid: str, function_uuid: str) -> bool:
 
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fscailable%2Fsclblpy.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fscailable%2Fsclblpy?ref=badge_large)
